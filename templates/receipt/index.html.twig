@@ -1,0 +1,35 @@
+{# templates/receipt/index.html.twig #}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Consulta de Recibos de Pago</title>
+</head>
+<body>
+    <h1>Consulta de Recibos de Pago</h1>
+
+    <form method="post">
+        <label for="id_number">Número de Identificación:</label>
+        <input type="text" id="id_number" name="id_number" required>
+
+        <label for="other_identifier">Otro Identificador:</label>
+        <input type="text" id="other_identifier" name="other_identifier" required>
+
+        <button type="submit">Consultar</button>
+    </form>
+
+    {% if transfer %}
+        <h2>Recibos por transferencia:</h2>
+        <p>Nombre: {{ transfer[0].name }}</p>
+        {% for item in transfer %}
+            <p>Recibo: {{ item.receipt }}<br/>Alumnx: {{ item.student }}<br/>Item: {{ item.item }}<br/>Descripción: {{ item.desc }}</p>
+        {% endfor %}
+    {% endif %}
+    {% if box %}
+        <h2>Recibos por sobre:</h2>
+        <p>Nombre: {{ box[0].name }}</p>
+        {% for item in box %}
+            <p>Recibo: {{ item.receipt }}<br/>Alumnx: {{ item.student }}<br/>Mes: {{ item.month }}</p>
+        {% endfor %}
+    {% endif %}
+</body>
+</html>
