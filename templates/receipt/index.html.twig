@@ -21,14 +21,14 @@
         <h2>Recibos por transferencia:</h2>
         <p>Nombre: {{ transfer[0].name }}</p>
         {% for item in transfer %}
-            <p>Recibo: {{ item.receipt }}<br/>Alumnx: {{ item.student }}<br/>Item: {{ item.item }}<br/>Descripción: {{ item.desc }}</p>
+            <p>Recibo: <a href="/drive/file/{{ item.receiptFile }}">Descargar</a><br/>Alumnx: {{ item.student }}<br/>Item: {{ item.item }}<br/>Descripción: {{ item.desc }}</p>
         {% endfor %}
     {% endif %}
     {% if box %}
         <h2>Recibos por sobre:</h2>
         <p>Nombre: {{ box[0].name }}</p>
         {% for item in box %}
-            <p>Recibo: {{ item.receipt }}<br/>Alumnx: {{ item.student }}<br/>Mes: {{ item.month }}</p>
+            <p>Recibo: <a href="/drive/file/{{ item.receiptFile }}">Descargar</a><br/>Alumnx: {{ item.student }}<br/>Mes: {{ item.month }}</p>
         {% endfor %}
     {% endif %}
 </body>

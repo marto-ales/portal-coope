@@ -11,10 +11,20 @@ use Symfony\Component\Routing\Annotation\Route;
 class ReceiptController extends AbstractController
 {
     private $googleDriveService;
+    private $receiptsFolderId;
+    private $trfSpreadsheetId;
+    private $trfSpreadsheetRange;
+    private $boxSpreadsheetId;
+    private $boxSpreadsheetRange;
 
     public function __construct(GoogleDriveService $googleDriveService)
     {
         $this->googleDriveService = $googleDriveService;
+        $this->receiptsFolderId = $_ENV['GOOGLE_REC_FOLDER_ID'];
+        $this->trfSpreadsheetId = $_ENV['GOOGLE_TRF_SHEET_ID'];
+        $this->trfSpreadsheetRange = $_ENV['GOOGLE_TRF_SHEET_RANGE'];
+        $this->boxSpreadsheetId = $_ENV['GOOGLE_BOX_SHEET_ID'];
+        $this->boxSpreadsheetRange = $_ENV['GOOGLE_BOX_SHEET_RANGE'];
     }
 
     /**
@@ -40,21 +50,25 @@ class ReceiptController extends AbstractController
 
     public function getTransferReceipts($idNumber, $otherIdentifier) {
         $data = [];
-        $spreadsheetId = '11JLIQGS8Xg38Opjk_ucjiQJh0-4R1gRVBqftiVJtneE';
-        $range = "'Respuestas de formulario 1'!A:Q"; // Ajusta según la estructura de tu planilla
 
-        $values = $this->googleDriveService->getSpreadsheetData($spreadsheetId, $range);
+        $values = $this->googleDriveService->getSpreadsheetData($this->trfSpreadsheetId, $this->trfSpreadsheetRange);
 
         foreach ($values as $row) {
             if (array_key_exists(2,$row)) {
                 if ($row[2] && $row[2] == $idNumber ) { //&& $row[1] == $otherIdentifier) {
-                    $data[] = [
-                        'name' => $row[1],
-                        'student' => $row[5],
-                        'item' => $row[9],
-                        'desc' => $row[10],
-                        'receipt' => $row[16],
-                    ];
+                    $receiptsFound = $this->googleDriveService->getFilesList($this->receiptsFolderId, $row[16]);
+                    $receipt = null;
+                    if ($receiptsFound) {
+                        $receipt = $receiptsFound[0];
+                        $data[] = [
+                            'name' => $row[1],
+                            'student' => $row[5],
+                            'item' => $row[9],
+                            'desc' => $row[10],
+                            'receiptFile' => $receipt->id,
+                        ];
+                    }
+
                 }
             }
         }
@@ -75,10 +89,8 @@ class ReceiptController extends AbstractController
             28 => 'Diciembre',
         ];
         $data = [];
-        $spreadsheetId = '1-1D3F9ZKAQrZDprTw-7bBs2ZyzN-dOmPnmZxIl5X4RE';
-        $range = "'Por curso'!A:AC"; // Ajusta según la estructura de tu planilla
 
-        $values = $this->googleDriveService->getSpreadsheetData($spreadsheetId, $range);
+        $values = $this->googleDriveService->getSpreadsheetData($this->boxSpreadsheetId, $this->boxSpreadsheetRange);
 
         foreach ($values as $row) {
             if (array_key_exists(2,$row)) {
@@ -86,12 +98,17 @@ class ReceiptController extends AbstractController
                 if ($id_clean && $id_clean == $idNumber ) { //&& $row[1] == $otherIdentifier) {
                     foreach ($monthRows as $key => $month) {
                         if (array_key_exists($key,$row) && $row[$key]) {
-                            $data[] = [
-                                'name' => $row[1],
-                                'student' => $row[7],
-                                'month' => $month,
-                                'receipt' => $row[$key],
-                            ];
+                            $receiptsFound = $this->googleDriveService->getFilesList($this->receiptsFolderId, $row[$key]);
+                            $receipt = null;
+                            if ($receiptsFound) {
+                                $receipt = $receiptsFound[0];
+                                $data[] = [
+                                    'name' => $row[1],
+                                    'student' => $row[7],
+                                    'month' => $month,
+                                    'receiptFile' => $receipt->id,
+                                ];
+                            }
                         }
                     }
                 }
