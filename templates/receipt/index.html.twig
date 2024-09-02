@@ -20,16 +20,40 @@
     {% if transfer %}
         <h2>Recibos por transferencia:</h2>
         <p>Nombre: {{ transfer[0].name }}</p>
+        <table>
+            <tr>
+                <th scope="col">Recibo</th>
+                <th scope="col">Estudante</th>
+                <th scope="col">Item</th>
+                <th scope="col">Observaciones</th>
+            </tr>
         {% for item in transfer %}
-            <p>Recibo: <a href="/drive/file/{{ item.receiptFile }}">Descargar</a><br/>Alumnx: {{ item.student }}<br/>Item: {{ item.item }}<br/>Descripción: {{ item.desc }}</p>
+            <tr>
+                <td><a href="/drive/file/{{ item.receiptFile }}">Descargar</a></td>
+                <td>{{ item.student }}</td>
+                <td>{{ item.item }}</td>
+                <td>{{ item.desc }}</td>
+            </tr>
         {% endfor %}
+        </table>
     {% endif %}
     {% if box %}
         <h2>Recibos por sobre:</h2>
         <p>Nombre: {{ box[0].name }}</p>
+        <table>
+            <tr>
+                <th scope="col">Recibo</th>
+                <th scope="col">Estudante</th>
+                <th scope="col">Mes</th>
+            </tr>
         {% for item in box %}
-            <p>Recibo: <a href="/drive/file/{{ item.receiptFile }}">Descargar</a><br/>Alumnx: {{ item.student }}<br/>Mes: {{ item.month }}</p>
+            <tr>
+                <td><a href="/drive/file/{{ item.receiptFile }}">Descargar</a></td>
+                <td>{{ item.student }}</td>
+                <td>{{ item.month }}</td>
+            </tr>
         {% endfor %}
+        </table>
     {% endif %}
 </body>
 </html>
