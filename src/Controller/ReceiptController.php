@@ -37,9 +37,9 @@ class ReceiptController extends AbstractController
 
         if ($request->isMethod('POST')) {
             $idNumber = $request->request->get('id_number');
-            $otherIdentifier = $request->request->get('other_identifier');
-            $transferReceipts = $this->getTransferReceipts($idNumber, $otherIdentifier);
-            $boxReceipts = $this->getBoxReceipts($idNumber, $otherIdentifier);
+            $email = $request->request->get('email');
+            $transferReceipts = $this->getTransferReceipts($idNumber, $email);
+            $boxReceipts = $this->getBoxReceipts($idNumber, $email);
         }
 
         return $this->render('receipt/index.html.twig', [
@@ -48,30 +48,34 @@ class ReceiptController extends AbstractController
         ]);
     }
 
-    public function getTransferReceipts($idNumber, $otherIdentifier) {
+    public function getTransferReceipts($idNumber, $email) {
         $data = [];
+        $email = filter_var($email, FILTER_SANITIZE_EMAIL);
+        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $email = strtolower($email);
+            $values = $this->googleDriveService->getSpreadsheetData($this->trfSpreadsheetId, $this->trfSpreadsheetRange);
+            foreach ($values as $row) {
+                if (array_key_exists(2,$row)) {
+                    if ($row[2] && $row[2] == $idNumber && strtolower(trim($row[4])) == $email) {
+                        $receiptsFound = $this->googleDriveService->getFilesList($this->receiptsFolderId, $row[16]);
+                        $receipt = null;
+                        if ($receiptsFound) {
+                            $receipt = $receiptsFound[0];
+                            $data[] = [
+                                'name' => $row[1],
+                                'student' => $row[5],
+                                'item' => $row[9],
+                                'desc' => $row[10],
+                                'receiptFile' => $receipt->id,
+                            ];
+                        }
 
-        $values = $this->googleDriveService->getSpreadsheetData($this->trfSpreadsheetId, $this->trfSpreadsheetRange);
-
-        foreach ($values as $row) {
-            if (array_key_exists(2,$row)) {
-                if ($row[2] && $row[2] == $idNumber ) { //&& $row[1] == $otherIdentifier) {
-                    $receiptsFound = $this->googleDriveService->getFilesList($this->receiptsFolderId, $row[16]);
-                    $receipt = null;
-                    if ($receiptsFound) {
-                        $receipt = $receiptsFound[0];
-                        $data[] = [
-                            'name' => $row[1],
-                            'student' => $row[5],
-                            'item' => $row[9],
-                            'desc' => $row[10],
-                            'receiptFile' => $receipt->id,
-                        ];
                     }
-
                 }
             }
         }
+
+
         return $data;
     }
 

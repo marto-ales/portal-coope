@@ -61,7 +61,7 @@ class GoogleDriveService
     {
         $this->setAccessToken();
         $response = $this->driveService->files->listFiles([
-            'q' => "'${folderId}' in parents and trashed = false and name contains '00$receiptId'",
+            'q' => "'{$folderId}' in parents and trashed = false and name contains '00$receiptId'",
             'pageSize' => 1000,
             'orderBy' => 'createdTime',
             'fields' => 'nextPageToken, files(id, name)',
