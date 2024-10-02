@@ -25,6 +25,66 @@
     <div class="container my-4">
         <div class="row">
             <div class="col-md-8 mx-auto">
+                {% if app.request.method == "POST" %}
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white text-center">
+                            <h3>Resultado de la consulta</h3>
+                        </div>
+                        <div class="card-body">
+                            {% if transfer %}
+                                <h2>Recibos por transferencia</h2>
+                                <p>Nombre: {{ transfer[0].name }}</p>
+                                <table class="table table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th scope="col">Recibo</th>
+                                            <th scope="col">Estudiante</th>
+                                            <th scope="col">Item</th>
+                                            <th scope="col">Observaciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for item in transfer %}
+                                        <tr>
+                                            <td><a href="/drive/file/{{ item.receiptFile }}">Descargar</a></td>
+                                            <td>{{ item.student }}</td>
+                                            <td>{{ item.item }}</td>
+                                            <td>{{ item.desc }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            {% else %}
+                                <p>No se encontraron recibos por transferencia con los datos ingresados</p>
+                            {% endif %}
+
+                            {% if box %}
+                                <h2>Recibos por sobre</h2>
+                                <p>Nombre: {{ box[0].name }}</p>
+                                <table class="table table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th scope="col">Recibo</th>
+                                            <th scope="col">Estudiante</th>
+                                            <th scope="col">Mes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for item in box %}
+                                        <tr>
+                                            <td><a href="/drive/file/{{ item.receiptFile }}">Descargar</a></td>
+                                            <td>{{ item.student }}</td>
+                                            <td>{{ item.month }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            {% else %}
+                                <p>No se encontraron recibos por sobre con los datos ingresados</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
                 <div class="card shadow">
                     <div class="card-header bg-secondary text-white text-center">
                         <h3>Información</h3>
@@ -53,58 +113,6 @@
                             </altcha-widget>
                             <button type="submit" class="btn btn-primary w-100">Consultar</button>
                         </form>
-
-                        {% if transfer %}
-                            <h2>Recibos por transferencia</h2>
-                            <p>Nombre: {{ transfer[0].name }}</p>
-                            <table class="table table-bordered">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th scope="col">Recibo</th>
-                                        <th scope="col">Estudiante</th>
-                                        <th scope="col">Item</th>
-                                        <th scope="col">Observaciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                {% for item in transfer %}
-                                    <tr>
-                                        <td><a href="/drive/file/{{ item.receiptFile }}">Descargar</a></td>
-                                        <td>{{ item.student }}</td>
-                                        <td>{{ item.item }}</td>
-                                        <td>{{ item.desc }}</td>
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        {% else %}
-                            <p>No se encontraron recibos por transferencia con los datos ingresados</p>
-                        {% endif %}
-
-                        {% if box %}
-                            <h2>Recibos por sobre</h2>
-                            <p>Nombre: {{ box[0].name }}</p>
-                            <table class="table table-bordered">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th scope="col">Recibo</th>
-                                        <th scope="col">Estudiante</th>
-                                        <th scope="col">Mes</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                {% for item in box %}
-                                    <tr>
-                                        <td><a href="/drive/file/{{ item.receiptFile }}">Descargar</a></td>
-                                        <td>{{ item.student }}</td>
-                                        <td>{{ item.month }}</td>
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        {% else %}
-                            <p>No se encontraron recibos por sobre con los datos ingresados</p>
-                        {% endif %}
                     </div>
                 </div>
             </div>
