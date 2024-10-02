@@ -1,5 +1,28 @@
 twig:
     file_name_pattern: '*.twig'
+    globals:
+        portal:
+            title: 'La Coope del Rosales'
+            subtitle: 'La escuela pública la hacemos entre todxs'
+            description: 'Creamos este portal para que puedas encontrar información sobre la cooperadora, consultar y descargar los recibos de pago'
+            logo: 'images/coope-logo.jpg'
+            form_link: 'https://forms.gle/6QLEMywsxZkZAE4P9'
+            datos_banco: |
+                            Datos bancarios:
+                            CBU 0290059900000000008714
+                            Alias:  CAMARA.TIENTO.GENTE
+            email: cooperadorarosales@gmail.com
+        altcha:
+            apikey: 'ckey_01b1ae1263b0ce2540e7d3578d06'
+            strings:
+                ariaLinkLabel: "Visite Altcha.org"
+                error: "Verificación fallida. Intente nuevamente mas tarde."
+                expired: "Verificación expirada. Intente nuevamente."
+                footer: 'Protegido por <a href="https://altcha.org/" target="_blank" aria-label="Visite Altcha.org">ALTCHA</a>'
+                label: "No soy un robot"
+                verified: "Verificado"
+                verifying: "Verificando..."
+                waitAlert: "Verificando... espere por favor."
 
 when@test:
     twig:
