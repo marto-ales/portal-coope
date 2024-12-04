@@ -3,3 +3,19 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+
+receipt:
+    path: /
+    controller: App\Controller\ReceiptController::index
+
+google_auth:
+    path: /drive/auth
+    controller: App\Controller\GoogleDriveController::googleAuth
+
+google_callback:
+    path: /drive/callback
+    controller: App\Controller\GoogleDriveController::googleCallback
+
+google_file:
+    path: /drive/file/{id}
+    controller: App\Controller\GoogleDriveController::getFile

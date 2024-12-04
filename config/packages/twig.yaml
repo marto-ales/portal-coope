@@ -1,5 +1,25 @@
 twig:
     file_name_pattern: '*.twig'
+    globals:
+        portal:
+            title:  '%env(PORTAL_TITLE)%'
+            subtitle: '%env(PORTAL_SUBTITLE)%'
+            description: '%env(PORTAL_DESCRIPTION)%'
+            logo: '%env(PORTAL_LOGO)%'
+            form_link: '%env(PORTAL_FORM_URL)%'
+            datos_banco: '%env(PORTAL_BANK_INFO)%'
+            email: '%env(PORTAL_EMAIL)%'
+        altcha:
+            apikey: '%env(ALTCHA_APIKEY)%'
+            strings:
+                ariaLinkLabel: "Visite Altcha.org"
+                error: "Verificación fallida. Intente nuevamente mas tarde."
+                expired: "Verificación expirada. Intente nuevamente."
+                footer: 'Protegido por <a href="https://altcha.org/" target="_blank" aria-label="Visite Altcha.org">ALTCHA</a>'
+                label: "No soy un robot"
+                verified: "Verificado"
+                verifying: "Verificando..."
+                waitAlert: "Verificando... espere por favor."
 
 when@test:
     twig:
