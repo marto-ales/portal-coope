@@ -57,19 +57,20 @@ class ReceiptController extends AbstractController
             foreach ($values as $row) {
                 if (array_key_exists(2,$row)) {
                     if ($row[2] && $row[2] == $idNumber && strtolower(trim($row[4])) == $email) {
-                        $receiptsFound = $this->googleDriveService->getFilesList($this->receiptsFolderId, $row[16]);
-                        $receipt = null;
-                        if ($receiptsFound) {
-                            $receipt = $receiptsFound[0];
-                            $data[] = [
-                                'name' => $row[1],
-                                'student' => $row[5],
-                                'item' => $row[9],
-                                'desc' => $row[10],
-                                'receiptFile' => $receipt->id,
-                            ];
+                        if (array_key_exists(16,$row) && $row[16]) {
+                            $receiptsFound = $this->googleDriveService->getFilesList($this->receiptsFolderId, $row[16]);
+                            $receipt = null;
+                            if ($receiptsFound) {
+                                $receipt = $receiptsFound[0];
+                                $data[] = [
+                                    'name' => $row[1],
+                                    'student' => $row[5],
+                                    'item' => $row[9],
+                                    'desc' => $row[10],
+                                    'receiptFile' => $receipt->id,
+                                ];
+                            }
                         }
-
                     }
                 }
             }
