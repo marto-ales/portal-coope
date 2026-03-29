@@ -154,9 +154,7 @@
                 </div>
 
                 {# Altcha widget (descomenta cuando esté activo) #}
-                <altcha-widget
-                        challengeurl="https://eu.altcha.org/api/v1/challenge?apiKey={{ altcha.apikey }}"
-                        strings='{{ altcha.strings|json_encode }}'>
+                <altcha-widget challengeurl="https://eu.altcha.org/api/v1/challenge?apiKey={{ altcha.apikey }}" strings='{{ altcha.strings | json_encode }}'>
                 </altcha-widget>
 
                 <button
@@ -188,13 +186,16 @@
     const spinner = btn.querySelector('.spinner-border');
     const overlay = document.getElementById('loadingOverlay');
 
-    form.addEventListener('submit', function () {
+    form.addEventListener('submit', function (e) {
         // Deshabilitamos el botón y mostramos el spinner interno
+        e.preventDefault();
         btn.disabled = true;
         spinner.classList.remove('d-none');
 
         // Opcional: mostramos un overlay global mientras se procesa la petición
         overlay.classList.add('show');
+        // Espera 300 ms (ajusta según tu necesidad) y luego envía el formulario
+        setTimeout(() => form.submit(), 500);
     });
 
     // Si quieres que el overlay se oculte cuando la respuesta llegue,
