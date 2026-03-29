@@ -5,120 +5,201 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Consulta de Recibos de Pago</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap 5.3 (CDN) -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Altcha – Protección anti‑bot (solo se carga si el widget está activo) -->
     <script async defer src="https://cdn.jsdelivr.net/npm/altcha/dist/altcha.min.js" type="module"></script>
+
+    <style>
+        /* Ajustes visuales */
+        body { background:#f8f9fa; }
+        header .logo { height: 200px; }
+        .card-header { font-weight: 600; }
+        .spinner-border-sm { width: 1rem; height: 1rem; }
+        .loading-overlay {
+            position: fixed; inset: 0; background: rgba(255,255,255,.6);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1050; visibility: hidden;
+        }
+        .loading-overlay.show { visibility: visible; }
+    </style>
 </head>
-<header>
-<div class="p-3 text-center bg-body-tertiary">
+
+<body class="bg-light">
+
+<header class="bg-body-tertiary py-4">
+    <div class="container text-center">
         <h1 class="mb-3">
-            <img src="{{ asset(portal.logo) }}"
-                height="200"
-                alt="{{ portal.title }}"
-                loading="lazy" /><br/>
-            {{ portal.title }}
+            <img src="{{ asset(portal.logo) }}" class="logo" alt="{{ portal.title }}">
+            <br>{{ portal.title }}
         </h1>
         <p class="mb-3">{{ portal.subtitle }}</p>
         <h4>{{ portal.description }}</h4>
     </div>
 </header>
-<body class="bg-light">
-    <div class="container my-4">
-        <div class="row">
-            <div class="col-md-8 mx-auto">
-                {% if app.request.method == "POST" %}
-                    <div class="card shadow">
-                        <div class="card-header bg-primary text-white text-center">
-                            <h3>Resultado de la consulta</h3>
-                        </div>
-                        <div class="card-body">
-                            {% if transfer %}
-                                <h2>Recibos por transferencia</h2>
-                                <p>Nombre: {{ transfer[0].name }}</p>
-                                <table class="table table-bordered">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th scope="col">Recibo</th>
-                                            <th scope="col">Estudiante</th>
-                                            <th scope="col">Item</th>
-                                            <th scope="col">Observaciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                    {% for item in transfer %}
-                                        <tr>
-                                            <td><a href="/drive/file/{{ item.receiptFile }}">Descargar</a></td>
-                                            <td>{{ item.student }}</td>
-                                            <td>{{ item.item }}</td>
-                                            <td>{{ item.desc }}</td>
-                                        </tr>
-                                    {% endfor %}
-                                    </tbody>
-                                </table>
-                            {% else %}
-                                <p>No se encontraron recibos por transferencia con los datos ingresados</p>
-                            {% endif %}
 
-                            {% if box %}
-                                <h2>Recibos por sobre</h2>
-                                <p>Nombre: {{ box[0].name }}</p>
-                                <table class="table table-bordered">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th scope="col">Recibo</th>
-                                            <th scope="col">Estudiante</th>
-                                            <th scope="col">Mes</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                    {% for item in box %}
-                                        <tr>
-                                            <td><a href="/drive/file/{{ item.receiptFile }}">Descargar</a></td>
-                                            <td>{{ item.student }}</td>
-                                            <td>{{ item.month }}</td>
-                                        </tr>
-                                    {% endfor %}
-                                    </tbody>
-                                </table>
-                            {% else %}
-                                <p>No se encontraron recibos por sobre con los datos ingresados</p>
-                            {% endif %}
-                        </div>
-                    </div>
-                {% endif %}
-                <div class="card shadow">
-                    <div class="card-header bg-secondary text-white text-center">
-                        <h3>Información</h3>
-                    </div>
-                    <div class="card-body">
-                        <p>Si pagaste por transferencia recordá informar el pago completando el formulario <a href="{{ portal.form_link }}" target="_blank">aquí</a></p>
-                        <p>{{ portal.datos_banco | nl2br }}</p>
-                        <p><a href="mailto:{{ portal.email }}">{{ portal.email }}</a></p>
-                    </div>
-                </div>
-                <div class="card shadow">
-                    <div class="card-header bg-primary text-white text-center">
-                        <h3>Consulta de Recibos de Pago</h3>
-                    </div>
-                    <div class="card-body">
-                        <form method="post" class="mb-4">
-                            <div class="mb-3">
-                                <label for="id_number" class="form-label">Documento:</label>
-                                <input type="text" placeholder="De la persona que realizó el pago" id="id_number" name="id_number" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Correo electrónico:</label>
-                                <input type="text" placeholder="De la persona que realizó el pago" id="email" name="email" class="form-control" required>
-                            </div>
-                            <altcha-widget challengeurl="https://eu.altcha.org/api/v1/challenge?apiKey={{ altcha.apikey }}" strings='{{ altcha.strings | json_encode }}'>
-                            </altcha-widget>
-                            <button type="submit" class="btn btn-primary w-100">Consultar</button>
-                        </form>
-                    </div>
-                </div>
+<div class="container my-4">
+    {# Resultados (solo después de POST) #}
+    {% if app.request.method == "POST" %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white text-center">
+                <h3 class="mb-0">Resultado de la consulta</h3>
             </div>
+            <div class="card-body">
+                {# Transferencias #}
+                {% if transfer %}
+                    <h2>Recibos por transferencia</h2>
+                    <p>Nombre: {{ transfer[0].name }}</p>
+                    <table class="table table-bordered table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Recibo</th>
+                                <th>Estudiante</th>
+                                <th>Item</th>
+                                <th>Observaciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in transfer %}
+                                <tr>
+                                    <td><a href="/drive/file/{{ item.receiptFile }}">Descargar</a></td>
+                                    <td>{{ item.student }}</td>
+                                    <td>{{ item.item }}</td>
+                                    <td>{{ item.desc }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>No se encontraron recibos por transferencia con los datos ingresados.</p>
+                {% endif %}
+
+                {# Sobres #}
+                {% if box %}
+                    <h2>Recibos por sobre</h2>
+                    <p>Nombre: {{ box[0].name }}</p>
+                    <table class="table table-bordered table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Recibo</th>
+                                <th>Estudiante</th>
+                                <th>Mes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in box %}
+                                <tr>
+                                    <td><a href="/drive/file/{{ item.receiptFile }}">Descargar</a></td>
+                                    <td>{{ item.student }}</td>
+                                    <td>{{ item.month }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>No se encontraron recibos por sobre con los datos ingresados.</p>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+    {# Información de contacto #}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-secondary text-white text-center">
+            <h3 class="mb-0">Información</h3>
+        </div>
+        <div class="card-body">
+            <p>
+                Si pagaste por transferencia, recordá informar el pago completando el
+                formulario <a href="{{ portal.form_link }}" target="_blank">aquí</a>.
+            </p>
+            <p>{{ portal.datos_banco|nl2br }}</p>
+            <p><a href="mailto:{{ portal.email }}">{{ portal.email }}</a></p>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    {# Formulario de búsqueda #}
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white text-center">
+            <h3 class="mb-0">Consulta de Recibos de Pago</h3>
+        </div>
+        <div class="card-body">
+            <form id="consultaForm" method="post" class="mb-4">
+                <div class="mb-3">
+                    <label for="id_number" class="form-label">Documento:</label>
+                    <input
+                        type="text"
+                        placeholder="De la persona que realizó el pago"
+                        id="id_number"
+                        name="id_number"
+                        class="form-control"
+                        required
+                    >
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Correo electrónico:</label>
+                    <input
+                        type="email"
+                        placeholder="De la persona que realizó el pago"
+                        id="email"
+                        name="email"
+                        class="form-control"
+                        required
+                    >
+                </div>
+
+                {# Altcha widget (descomenta cuando esté activo) #}
+                <altcha-widget
+                        challengeurl="https://eu.altcha.org/api/v1/challenge?apiKey={{ altcha.apikey }}"
+                        strings='{{ altcha.strings|json_encode }}'>
+                </altcha-widget>
+
+                <button
+                    type="submit"
+                    id="consultarBtn"
+                    class="btn btn-primary w-100"
+                >
+                    <span class="d-inline-block me-2"><i class="bi bi-search"></i></span>
+                    Consultar
+                    <span class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{# Spinner overlay (opcional, para un feedback global) #}
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // --------- Indicador de carga ----------
+    const form = document.getElementById('consultaForm');
+    const btn = document.getElementById('consultarBtn');
+    const spinner = btn.querySelector('.spinner-border');
+    const overlay = document.getElementById('loadingOverlay');
+
+    form.addEventListener('submit', function () {
+        // Deshabilitamos el botón y mostramos el spinner interno
+        btn.disabled = true;
+        spinner.classList.remove('d-none');
+
+        // Opcional: mostramos un overlay global mientras se procesa la petición
+        overlay.classList.add('show');
+    });
+
+    // Si quieres que el overlay se oculte cuando la respuesta llegue,
+    // debes añadir un manejo de eventos en tu controlador que redirija
+    // o actualice la página después de procesar la consulta.
+</script>
 </body>
 </html>
