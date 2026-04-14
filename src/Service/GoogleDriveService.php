@@ -17,7 +17,7 @@ class GoogleDriveService
         $this->client = new Client();
         $this->client->setAuthConfig(__DIR__.'/../../config/credentials.json');
         $this->client->setDeveloperKey($_ENV['GOOGLE_API_KEY']);
-        $this->client->addScope(Drive::DRIVE_READONLY);
+        $this->client->addScope(Drive::DRIVE);
         $this->client->setAccessType('offline');
 
         $this->drive = new Drive($this->client);
