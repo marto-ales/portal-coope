@@ -6,7 +6,7 @@ use Google\Client;
 use Google\Service\Drive;
 use Symfony\Component\Dotenv\Dotenv;
 
-require_once '../vendor/autoload.php';
+require_once  __DIR__ . '/../vendor/autoload.php';
 
 // Cargar variables de entorno
 $dotenv = new Dotenv();
