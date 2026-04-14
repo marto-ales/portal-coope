@@ -180,8 +180,8 @@ try {
     $dotenv->load(__DIR__ . '/../.env.local');
 
     // CONFIGURACIÓN
-    $CREDENTIALS_FILE = __DIR__.'/../config/credentials.json'; // Tu credencial de Google
-    $TOKEN_FILE = __DIR__.'/../config/token.json';
+    $CREDENTIALS_FILE = __DIR__.'/../config/credentials_cli.json'; // Tu credencial de Google
+    $TOKEN_FILE = __DIR__.'/../config/token_cli.json';
     $DRIVE_PARENT_ID  = $_ENV['GOOGLE_REC_FOLDER_ID']; // 'ID_DEL_PADRE_O_FOLLETO';      // ID de la carpeta de Drive donde están los PDFs
     $TEMP_DOWNLOAD_PATH = sys_get_temp_dir() . '/drive_process/';
     $BASH_SCRIPT_PATH = __DIR__. '/rename-recibo.sh';     // Tu script bash
