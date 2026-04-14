@@ -80,7 +80,7 @@ class DrivePdfProcessor
                 $bashResult = $this->runBashScript($bash_script, $tempPath);
 
                 if ($bashResult['exit_code'] !== 0) {
-                    echo "Error en el script Bash para {$fileName}: {$bashResult['stderr']}\n";
+                    echo "Error en el script Bash para {$fileName}: {$bashResult['output']}\n";
                     continue; // Saltar a la siguiente
                 }
 
@@ -184,7 +184,7 @@ try {
     $TOKEN_FILE = __DIR__.'/../config/token.json';
     $DRIVE_PARENT_ID  = $_ENV['GOOGLE_REC_FOLDER_ID']; // 'ID_DEL_PADRE_O_FOLLETO';      // ID de la carpeta de Drive donde están los PDFs
     $TEMP_DOWNLOAD_PATH = sys_get_temp_dir() . '/drive_process/';
-    $BASH_SCRIPT_PATH = 'rename-recibo.sh';     // Tu script bash
+    $BASH_SCRIPT_PATH = __DIR__. '/rename-recibo.sh';     // Tu script bash
     $DRIVE_OUTPUT_DIR_ID = null; // (Opcional) ID de carpeta para subir los nuevos PDFs. Si null, se reemplaza en la misma carpeta.
     $RECIBOS_PREFIX = $_ENV['RECIBOS_PREFIJO'];
 
