@@ -116,9 +116,9 @@ class DrivePdfProcessor
             } catch (Exception $e) {
                 echo "Error procesando {$fileName}: " . $e->getMessage() . "\n";
                 // Intentar limpiar en caso de error
-                if (file_exists($temp_path . $fileName)) {
-                    unlink($temp_path . $fileName);
-                }
+                //if (file_exists($temp_path . $fileName)) {
+                //    unlink($temp_path . $fileName);
+                //}
             }
             if ($success_files >= 5) break;
         }
