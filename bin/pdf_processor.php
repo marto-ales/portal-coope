@@ -9,40 +9,55 @@ use Google\Service\Drive;
 use Google\Service\Drive\DriveFile;
 use Google\Http\MediaFileUpload;
 
+
 class DrivePdfProcessor
 {
     private $client;
     private $service;
+    private $tokenFile;
 
     public function __construct($cred_file, $token_file, $temp_path)
     {
         $this->client = new Google\Client();
         // Configuración básica del cliente
-        $this->client->setApplicationName("SymfonyDriveProcessor");
-        $this->client->setScopes([Google\Service\Drive::DRIVE]); // Alcance para crear, editar y borrar
-
-        // Carga de credenciales
-        // NOTA: Si tu app Symfony usa un Token de Servicio (Service Account), asegúrate de que el JSON tenga las claves correctas.
-        // Si usas OAuth 2.0 de usuario, asegúrate de que el token actual esté guardado en $CREDENTIALS_FILE.
-        // Google Auth Client carga automáticamente si el archivo está en formato correcto.
-        $this->client->setAuthConfig($cred_file);
-
-        // Si usas Service Account (aplicación backend), necesita impersonation si está usando cuenta de usuario.
-        // Si es una Service Account pura, añade:
-        // $this->client->setAuthConfig($CREDENTIALS_FILE);
-        // $this->client->useApplicationDefaultCredentials();
-
-        // SI USAS TOKEN JSON EXISTENTE (OAuth usuario)
-        if (file_exists($token_file)) {
-            $this->client->setAccessToken(json_decode(file_get_contents($token_file), true));
+        $this->client->setApplicationName("CoopeRosalesPdfProcessor");
+        $this->tokenFile = $token_file;
+        // 1. Cargar credenciales
+        if (!file_exists($cred_file)) {
+            throw new RuntimeException("Credentials file not found: {$cred_file}");
         }
+        $this->client->setAuthConfig($cred_file);
+        $this->client->setScopes([Drive::DRIVE]);
 
+        // 2. Intentar cargar token existente
+        if (file_exists($this->tokenFile)) {
+            $this->loadOrRefreshToken();
+        } else {
+            throw new RuntimeException("No token found. Run: php bin/generate_oauth_token.php");
+        }
 
         $this->service = new Google\Service\Drive($this->client);
 
         // Crear carpeta temporal si no existe
         if (!file_exists($temp_path)) {
             mkdir($temp_path, 0777, true);
+        }
+    }
+
+    private function loadOrRefreshToken(): void
+    {
+        $token = json_decode(file_get_contents($this->tokenFile), true);
+
+        if (!isset($token['access_token'])) {
+            throw new RuntimeException("Invalid token.json format");
+        }
+
+        $this->client->setAccessToken($token);
+
+        // Si el token está expirado, el cliente lo refrescará automáticamente en la primera llamada
+        if ($this->client->isAccessTokenExpired()) {
+            echo "⚡ El token de acceso está expirado. Refrescando automáticamente...\n";
+            // La librería usa el refresh_token almacenado para obtener un nuevo access_token
         }
     }
 
@@ -70,7 +85,12 @@ class DrivePdfProcessor
 
             try {
                 // 2. Descargar archivo temporalmente
-                $tempPath = $this->downloadFile($fileId, $temp_path . $fileName);
+                if (!file_exists($temp_path . $fileName)) {
+                    $tempPath = $this->downloadFile($fileId, $temp_path . $fileName);
+                }
+                else {
+                    $tempPath = $temp_path . $fileName;
+                }
 
                 if (!$tempPath || !file_exists($tempPath)) {
                     throw new Exception("Error al descargar el archivo desde Drive.");
@@ -108,8 +128,12 @@ class DrivePdfProcessor
                 // 5. Opcional: Eliminar el original en Drive si el script bash se encarga de la "sustitución"
                 // $this->service->files->delete($fileId);
                 $success_files++;
-                echo "Procesado y renombrado correctamente: {$newFileName}\n";
-
+                if ($uploadResponse === null) {
+                    echo "Procesado, ya existe: {$newFileName}\n";
+                }
+                else {
+                    echo "Procesado y renombrado correctamente: {$newFileName}\n";
+                }
                 // Limpieza local
                 //unlink($tempPath);
 
@@ -153,19 +177,26 @@ class DrivePdfProcessor
             'parents' => [$parentId]
         ]);
 
-        // Método correcto para subir media en google/apiclient v2.x
-        $response = $this->service->files->create(
-            $fileMetadata,
-            array(
-                'data' => file_get_contents($localPath),
-                'mimeType' => 'application/pdf',
-                'fields' => 'id'
-            )
-        );
-        // Si deseas borrar el archivo original después de subir el nuevo:
-        $this->service->files->delete($originalFileId);
+        $query = "mimeType contains 'application/pdf' and trashed = false and '{$parentId}' in parents and name = '{$fileName}'";
+        $files = $this->service->files->listFiles(['q' => $query, 'pageSize' => 1000, 'orderBy' => 'createdTime', 'fields' => 'nextPageToken, files(id, name)']);
 
-        return $response;
+        if (count($files->getFiles()) == 0) {
+            // Método correcto para subir media en google/apiclient v2.x
+            $response = $this->service->files->create(
+                $fileMetadata,
+                array(
+                    'data' => file_get_contents($localPath),
+                    'mimeType' => 'application/pdf',
+                    'fields' => 'id'
+                )
+            );
+            return $response;
+        } else {
+            return null;
+        }
+        // Si deseas borrar el archivo original después de subir el nuevo:
+        //$this->service->files->delete($originalFileId);
+
     }
 
 }
@@ -180,7 +211,7 @@ try {
     $dotenv->load(__DIR__ . '/../.env.local');
 
     // CONFIGURACIÓN
-    $CREDENTIALS_FILE = __DIR__.'/../config/credentials_cli.json'; // Tu credencial de Google
+    $CREDENTIALS_FILE = __DIR__.'/../config/' . $_ENV['GOOGLE_TOKEN_FILE']; // credentials_cli.json'; // Tu credencial de Google
     $TOKEN_FILE = __DIR__.'/../config/token_cli.json';
     $DRIVE_PARENT_ID  = $_ENV['GOOGLE_REC_FOLDER_ID']; // 'ID_DEL_PADRE_O_FOLLETO';      // ID de la carpeta de Drive donde están los PDFs
     $TEMP_DOWNLOAD_PATH = sys_get_temp_dir() . '/drive_process/';

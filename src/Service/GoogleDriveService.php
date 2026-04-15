@@ -19,6 +19,8 @@ class GoogleDriveService
         $this->client->setDeveloperKey($_ENV['GOOGLE_API_KEY']);
         $this->client->addScope(Drive::DRIVE);
         $this->client->setAccessType('offline');
+        $this->client->setApprovalPrompt("force");
+        $this->client->setIncludeGrantedScopes(true);
 
         $this->drive = new Drive($this->client);
     }
@@ -36,9 +38,9 @@ class GoogleDriveService
         $this->client->setAccessToken($accessToken);
 
         // Guardar el token para uso futuro
-        #if (!empty($accessToken['refresh_token'])) {
-        file_put_contents(__DIR__.'/../../config/token.json', json_encode($accessToken));
-        #}
+        if (!empty($accessToken['refresh_token'])) {
+            file_put_contents(__DIR__.'/../../config/token.json', json_encode($accessToken));
+        }
 
         $this->driveService = new Drive($this->client);
     }
