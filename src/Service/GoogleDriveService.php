@@ -42,7 +42,7 @@ class GoogleDriveService
             file_put_contents(__DIR__.'/../../config/token.json', json_encode($accessToken));
         }
 
-        $this->driveService = new Drive($this->client);
+        $this->drive = new Drive($this->client);
     }
 
     public function setAccessToken()
@@ -55,14 +55,14 @@ class GoogleDriveService
                 $this->client->fetchAccessTokenWithRefreshToken($this->client->getRefreshToken());
                 file_put_contents(__DIR__.'/../../config/token.json', json_encode($this->client->getAccessToken()));
             }
-            $this->driveService = new Drive($this->client);
+            $this->drive = new Drive($this->client);
         }
     }
 
     public function getFilesList($folderId, $receiptId)
     {
         $this->setAccessToken();
-        $response = $this->driveService->files->listFiles([
+        $response = $this->drive->files->listFiles([
             'q' => "'{$folderId}' in parents and trashed = false and name contains '00$receiptId'",
             'pageSize' => 1000,
             'orderBy' => 'createdTime',
@@ -74,7 +74,7 @@ class GoogleDriveService
     public function getFile($fileId)
     {
         $this->setAccessToken();
-        $response = $this->driveService->files->get($fileId, ['alt' => 'media']);
+        $response = $this->drive->files->get($fileId, ['alt' => 'media']);
         return $response;
     }
 
