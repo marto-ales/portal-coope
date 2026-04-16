@@ -1,5 +1,4 @@
 <?php
-
 // bin/generate_oauth_token.php
 
 use Google\Client;
@@ -26,40 +25,47 @@ if (!file_exists($tokenDir)) {
 }
 
 $client = new Client();
-
-// Configurar credenciales
 $client->setAuthConfig($CREDENTIALS_FILE);
 $client->setScopes($SCOPES);
 
-// Cargar token existente si ya existe
-if (file_exists($TOKEN_FILE)) {
-    $client->setAccessToken(json_decode(file_get_contents($TOKEN_FILE), true));
-}
+$authUrl = $client->createAuthUrl($SCOPES, ['access_type' => 'offline', 'approval_prompt' => 'force']);
 
-// Si ya hay token válido, salir
-if (!$client->isAccessTokenExpired()) {
-    echo "El token ya es válido. Token generado previamente.\n";
-    exit(0);
-}
+echo "\n==================================================\n";
+echo "  GENERACIÓN DE TOKEN OAuth2 - Google Drive\n";
+echo "==================================================\n\n";
 
-// Generar URL de autorización
-$authUrl = $client->createAuthUrl();
+echo "1. Abre la siguiente URL en tu navegador:\n\n";
+echo "   {$authUrl}\n\n";
+echo "2. Inicia sesión con tu cuenta de Google Workspace\n";
+echo "3. Autoriza el acceso a Google Drive (Full permissions)\n";
+echo "4. Copia el código de autorización (9-10 caracteres)\n\n";
 
-echo "1. Ve a la siguiente URL en tu navegador:\n\n";
-echo $authUrl . "\n\n";
-echo "2. Inicia sesión con tu cuenta de Google\n";
-echo "3. Autoriza a la aplicación para acceder a tu Google Drive\n";
-echo "4. Copia el código de autorización que verás en la pantalla\n\n";
-
-// Pedir el código de autorización al usuario
-echo "Ingresa el código de autorización: ";
+echo "Ingresa el código: ";
 $authCode = trim(fgets(STDIN));
 
-// Intercambiar el código por un token
-$client->fetchAccessTokenWithAuthCode($authCode);
+if (empty($authCode)) {
+    echo "\n❌ Código vacío. Ejecuta el script nuevamente.\n";
+    exit(1);
+}
 
-// Guardar el token en el archivo
-file_put_contents($TOKEN_FILE, json_encode($client->getAccessToken()));
+try {
+    $token = $client->fetchAccessTokenWithAuthCode($authCode);
 
-echo "\n✅ Token guardado en: {$TOKEN_FILE}\n";
-echo "Ahora puedes usar tu aplicación con OAuth2\n";
+    if (isset($token['refresh_token'])) {
+        echo "\n✅ Token generado correctamente.\n";
+        echo "El refresh_token está incluido. El token se guardará automáticamente.\n";
+    } else {
+        throw new RuntimeException("El token no contiene refresh_token. Revisa los scopes.");
+    }
+
+    file_put_contents($TOKEN_FILE, json_encode($token));
+
+    echo "\n==================================================\n";
+    echo "  ✅ TOKEN GUARDADO EN: {$TOKEN_FILE}\n";
+    echo "==================================================\n";
+    echo "Ahora puedes procesar PDFs.\n";
+
+} catch (Exception $e) {
+    echo "\n❌ Error: " . $e->getMessage() . "\n";
+    exit(1);
+}

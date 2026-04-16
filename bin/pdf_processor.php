@@ -31,7 +31,8 @@ class DrivePdfProcessor
 
         // 2. Intentar cargar token existente
         if (file_exists($this->tokenFile)) {
-            $this->loadOrRefreshToken();
+            $this->loadToken();
+            $this->ensureValidToken();
         } else {
             throw new RuntimeException("No token found. Run: php bin/generate_oauth_token.php");
         }
@@ -44,7 +45,7 @@ class DrivePdfProcessor
         }
     }
 
-    private function loadOrRefreshToken(): void
+  private function loadToken(): void
     {
         $token = json_decode(file_get_contents($this->tokenFile), true);
 
@@ -53,11 +54,30 @@ class DrivePdfProcessor
         }
 
         $this->client->setAccessToken($token);
+    }
 
-        // Si el token está expirado, el cliente lo refrescará automáticamente en la primera llamada
+    private function ensureValidToken(): void
+    {
+        // Verificar si el token está expirado
         if ($this->client->isAccessTokenExpired()) {
-            echo "⚡ El token de acceso está expirado. Refrescando automáticamente...\n";
-            // La librería usa el refresh_token almacenado para obtener un nuevo access_token
+            echo "⚡ El token de acceso está expirado. Renovando...\n";
+
+            try {
+                // Intentar refrescar el token
+                $newToken = $this->client->fetchAccessTokenWithRefreshToken($this->client->getRefreshToken());
+
+                if (isset($newToken['access_token'])) {
+                    $this->client->setAccessToken($newToken);
+                    $this->saveToken($newToken);
+                    echo "✅ Token renovado exitosamente.\n";
+                } else {
+                    throw new RuntimeException("No new access token received after refresh.");
+                }
+            } catch (Exception $e) {
+                echo "❌ Error al renovar token: " . $e->getMessage() . "\n";
+                echo "El refresh token puede haber expirado. Ejecuta: php bin/generate_oauth_token.php\n";
+                throw $e;
+            }
         }
     }
 
@@ -144,7 +164,7 @@ class DrivePdfProcessor
                 //    unlink($temp_path . $fileName);
                 //}
             }
-            if ($success_files >= 5) break;
+            #if ($success_files >= 5) break;
         }
         echo "\nProceso finalizado con {$success_files} archivos procesados.\n";
     }
