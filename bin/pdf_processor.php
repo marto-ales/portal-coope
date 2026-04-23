@@ -63,8 +63,11 @@ class DrivePdfProcessor
             echo "⚡ El token de acceso está expirado. Renovando...\n";
 
             try {
-                // Intentar refrescar el token
-                $newToken = $this->client->fetchAccessTokenWithRefreshToken($this->client->getRefreshToken());
+                $refreshToken = $this->client->getRefreshToken();
+                if (!$refreshToken) {
+                    throw new RuntimeException("No hay refresh_token disponible. Ejecuta: php bin/generate_oauth_token.php");
+                }
+                $newToken = $this->client->fetchAccessTokenWithRefreshToken($refreshToken);
 
                 if (isset($newToken['access_token'])) {
                     $this->client->setAccessToken($newToken);
