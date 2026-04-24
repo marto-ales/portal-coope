@@ -45,7 +45,7 @@ class DrivePdfProcessor
         }
     }
 
-  private function loadToken(): void
+    private function loadToken(): void
     {
         $token = json_decode(file_get_contents($this->tokenFile), true);
 
@@ -54,6 +54,11 @@ class DrivePdfProcessor
         }
 
         $this->client->setAccessToken($token);
+    }
+
+    private function saveToken(array $token): void
+    {
+        file_put_contents($this->tokenFile, json_encode($token));
     }
 
     private function ensureValidToken(): void
@@ -70,6 +75,11 @@ class DrivePdfProcessor
                 $newToken = $this->client->fetchAccessTokenWithRefreshToken($refreshToken);
 
                 if (isset($newToken['access_token'])) {
+                    // Preservar refresh_token existente si no se incluye en la respuesta
+                    $oldToken = json_decode(file_get_contents($this->tokenFile), true);
+                    if (!isset($newToken['refresh_token']) && isset($oldToken['refresh_token'])) {
+                        $newToken['refresh_token'] = $oldToken['refresh_token'];
+                    }
                     $this->client->setAccessToken($newToken);
                     $this->saveToken($newToken);
                     echo "✅ Token renovado exitosamente.\n";
