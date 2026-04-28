@@ -80,7 +80,7 @@ class ReceiptController extends AbstractController
         return $data;
     }
 
-    public function getBoxReceipts($idNumber, $otherIdentifier) {
+    public function getBoxReceipts($idNumber, $email) {
         $monthRows = [
             10 => 'Marzo',
             12 => 'Abril',
@@ -94,25 +94,33 @@ class ReceiptController extends AbstractController
             28 => 'Diciembre',
         ];
         $data = [];
+        $email = filter_var($email, FILTER_SANITIZE_EMAIL);
+        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $email = strtolower($email);
+            $values = $this->googleDriveService->getSpreadsheetData($this->boxSpreadsheetId, $this->boxSpreadsheetRange);
 
-        $values = $this->googleDriveService->getSpreadsheetData($this->boxSpreadsheetId, $this->boxSpreadsheetRange);
-
-        foreach ($values as $row) {
-            if (array_key_exists(2,$row)) {
-                $id_clean = preg_replace('/[^0-9]/', '', $row[2]);
-                if ($id_clean && $id_clean == $idNumber ) { //&& $row[1] == $otherIdentifier) {
-                    foreach ($monthRows as $key => $month) {
-                        if (array_key_exists($key,$row) && $row[$key]) {
-                            $receiptsFound = $this->googleDriveService->getFilesList($this->receiptsFolderId, $row[$key]);
-                            $receipt = null;
-                            if ($receiptsFound) {
-                                $receipt = $receiptsFound[0];
-                                $data[] = [
-                                    'name' => $row[1],
-                                    'student' => $row[7],
-                                    'month' => $month,
-                                    'receiptFile' => $receipt->id,
-                                ];
+            foreach ($values as $row) {
+                if (array_key_exists(2,$row)) {
+                    $id_clean = preg_replace('/[^0-9]/', '', $row[2]);
+                    if ($id_clean && $id_clean == $idNumber ) { //&& $row[1] == $otherIdentifier) {
+                        if (array_key_exists(5,$row)) {
+                            $email_clean = strtolower(trim($row[5]));
+                            if ($email_clean == $email) {
+                                foreach ($monthRows as $key => $month) {
+                                    if (array_key_exists($key,$row) && $row[$key]) {
+                                        $receiptsFound = $this->googleDriveService->getFilesList($this->receiptsFolderId, $row[$key]);
+                                        $receipt = null;
+                                        if ($receiptsFound) {
+                                            $receipt = $receiptsFound[0];
+                                            $data[] = [
+                                                'name' => $row[1],
+                                                'student' => $row[7],
+                                                'month' => $month,
+                                                'receiptFile' => $receipt->id,
+                                            ];
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
