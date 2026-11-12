@@ -402,6 +402,7 @@ body {
     display: grid;
     gap: 1.3rem;
     margin-bottom: 2rem;
+    scroll-margin-top: 1.5rem;
     animation: rise .5s ease both;
 }
 

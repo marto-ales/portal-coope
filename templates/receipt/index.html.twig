@@ -130,9 +130,9 @@
             </form>
         </section>
 
-        {# Resultados (solo después de POST) #}
-        {% if app.request.method == "POST" %}
-            <section class="results">
+        {# Resultados (solo después de POST y sin error de captcha) #}
+        {% if app.request.method == "POST" and not captcha_error %}
+            <section class="results" id="resultados">
                 {% if transfer or box %}
                     {% if transfer %}
                         <article class="result-card result-card--transfer">
@@ -233,6 +233,20 @@
         // Pequeña espera para que el usuario vea el feedback y luego enviamos.
         setTimeout(() => form.submit(), 450);
     });
+
+    // --------- Desplazamiento automático a los resultados ----------
+    {% if app.request.method == "POST" and not captcha_error %}
+    window.addEventListener('load', () => {
+        const results = document.getElementById('resultados');
+        if (!results) return;
+
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        results.scrollIntoView({
+            behavior: reduceMotion ? 'auto' : 'smooth',
+            block: 'start'
+        });
+    });
+    {% endif %}
 </script>
 </body>
 </html>
