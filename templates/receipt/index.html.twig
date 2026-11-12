@@ -4,185 +4,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <link rel="manifest" href="/site.webmanifest">
-    <title>Consulta de Recibos de Pago</title>
+    <meta name="description" content="{{ portal.description }}">
+    <link rel="icon" type="image/jpeg" href="{{ asset(portal.logo) }}">
+    <link rel="apple-touch-icon" href="{{ asset(portal.logo) }}">
+    <title>{{ portal.title }} · Consulta de recibos</title>
 
-    <!-- Bootstrap 5.3 (CDN) -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
 
-    <!-- Altcha – Protección anti‑bot (solo se carga si el widget está activo) -->
+    {# Altcha – Protección anti‑bot (solo se carga si el widget está activo) #}
     <script async defer src="https://cdn.jsdelivr.net/npm/altcha/dist/altcha.min.js" type="module"></script>
-
-    <style>
-        /* Ajustes visuales */
-        body { background:#f8f9fa; }
-        header .logo { height: 200px; }
-        .card-header { font-weight: 600; }
-        .spinner-border-sm { width: 1rem; height: 1rem; }
-        .loading-overlay {
-            position: fixed; inset: 0; background: rgba(255,255,255,.6);
-            display: flex; align-items: center; justify-content: center;
-            z-index: 1050; visibility: hidden;
-        }
-        .loading-overlay.show { visibility: visible; }
-    </style>
 </head>
 
-<body class="bg-light">
+<body>
+<div class="page">
+    <span class="blob blob-1" aria-hidden="true"></span>
+    <span class="blob blob-2" aria-hidden="true"></span>
+    <span class="blob blob-3" aria-hidden="true"></span>
 
-<header class="bg-body-tertiary py-4">
-    <div class="container text-center">
-        <h1 class="mb-3">
-            <img src="{{ asset(portal.logo) }}" class="logo" alt="{{ portal.title }}">
-            <br>{{ portal.title }}
-        </h1>
-        <p class="mb-3">{{ portal.subtitle }}</p>
-        <h4>{{ portal.description }}</h4>
-    </div>
-</header>
-
-<div class="container my-4">
-    {# Resultados (solo después de POST) #}
-    {% if app.request.method == "POST" %}
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-primary text-white text-center">
-                <h3 class="mb-0">Resultado de la consulta</h3>
+    <main class="wrap">
+        <header class="hero">
+            <div class="logo-card">
+                <img src="{{ asset(portal.logo) }}" alt="{{ portal.title }}">
             </div>
-            <div class="card-body">
-                {# Transferencias #}
-                {% if transfer %}
-                    <h2>Recibos por transferencia</h2>
-                    <p>Nombre: {{ transfer[0].name }}</p>
-                    <table class="table table-bordered table-sm">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Recibo</th>
-                                <th>Estudiante</th>
-                                <th>Item</th>
-                                <th>Observaciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in transfer %}
-                                <tr>
-                                    <td><a href="/drive/file/{{ item.receiptFile }}">Descargar</a></td>
-                                    <td>{{ item.student }}</td>
-                                    <td>{{ item.item }}</td>
-                                    <td>{{ item.desc }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                {% else %}
-                    <p>No se encontraron recibos por transferencia con los datos ingresados.</p>
-                {% endif %}
+            <span class="eyebrow">Portal de la cooperadora</span>
+            <h1>{{ portal.title }}</h1>
+            <p class="lead">{{ portal.subtitle }}</p>
+            <p class="desc">{{ portal.description }}</p>
+        </header>
 
-                {# Sobres #}
-                {% if box %}
-                    <h2>Recibos por sobre</h2>
-                    <p>Nombre: {{ box[0].name }}</p>
-                    <table class="table table-bordered table-sm">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Recibo</th>
-                                <th>Estudiante</th>
-                                <th>Mes</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in box %}
-                                <tr>
-                                    <td><a href="/drive/file/{{ item.receiptFile }}">Descargar</a></td>
-                                    <td>{{ item.student }}</td>
-                                    <td>{{ item.month }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                {% else %}
-                    <p>No se encontraron recibos por sobre con los datos ingresados.</p>
-                {% endif %}
+        {# Información de contacto #}
+        <section class="info-grid">
+            <article class="info-card">
+                <h3>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <path d="M14 2v6h6"></path>
+                        <path d="M8 13h8M8 17h8"></path>
+                    </svg>
+                    Informaste un pago
+                </h3>
+                <p>Si pagaste por transferencia, recordá informar el pago completando el formulario.</p>
+                <a class="contact-link" href="{{ portal.form_link }}" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M14 3h7v7"></path>
+                        <path d="M21 3 10 14"></path>
+                        <path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"></path>
+                    </svg>
+                    Completar formulario de pago
+                </a>
+            </article>
+
+            <article class="info-card info-card--grape">
+                <h3>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M3 10h18M3 10 5 5h14l2 5M3 10v9h18v-9"></path>
+                        <path d="M7 19v-5h10v5"></path>
+                    </svg>
+                    Datos para transferir
+                </h3>
+                <div class="bank-box">{{ portal.datos_banco }}</div>
+                <a class="contact-link" href="mailto:{{ portal.email }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="2.5" y="4.5" width="19" height="15" rx="2.5"></rect>
+                        <path d="m3 6 9 6 9-6"></path>
+                    </svg>
+                    {{ portal.email }}
+                </a>
+            </article>
+        </section>
+
+        <section class="search-card">
+            <div class="search-head">
+                <h2>Consultá tus recibos</h2>
+                <p>Ingresá el documento y el correo con los que hiciste el pago.</p>
             </div>
-        </div>
-    {% endif %}
 
-    {# Información de contacto #}
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-secondary text-white text-center">
-            <h3 class="mb-0">Información</h3>
-        </div>
-        <div class="card-body">
-            <p>
-                Si pagaste por transferencia, recordá informar el pago completando el
-                formulario <a href="{{ portal.form_link }}" target="_blank">aquí</a>.
-            </p>
-            <p>{{ portal.datos_banco|nl2br }}</p>
-            <p><a href="mailto:{{ portal.email }}">{{ portal.email }}</a></p>
-        </div>
-    </div>
-
-    {# Formulario de búsqueda #}
-    <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white text-center">
-            <h3 class="mb-0">Consulta de Recibos de Pago</h3>
-        </div>
-        <div class="card-body">
-            <form id="consultaForm" method="post" class="mb-4">
-                <div class="mb-3">
-                    <label for="id_number" class="form-label">Documento:</label>
-                    <input type="text" placeholder="De la persona que realizó el pago" id="id_number" name="id_number" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label for="email" class="form-label">Correo electrónico:</label>
-                    <input type="email" placeholder="De la persona que realizó el pago" id="email" name="email" class="form-control" required>
+            <form id="consultaForm" method="post" class="search-form">
+                <div class="field">
+                    <label for="id_number">Documento</label>
+                    <div class="input-wrap">
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+                            <circle cx="9" cy="10" r="2"></circle>
+                            <path d="M15 8h3M15 12h3M7 16h10"></path>
+                        </svg>
+                        <input type="text" placeholder="De la persona que realizó el pago" id="id_number" name="id_number" autocomplete="off" required>
+                    </div>
                 </div>
 
-                {# Altcha widget (descomenta cuando esté activo) #}
-                <altcha-widget challengeurl="https://eu.altcha.org/api/v1/challenge?apiKey={{ altcha.apikey }}" strings='{{ altcha.strings | json_encode }}'>
-                </altcha-widget>
+                <div class="field">
+                    <label for="email">Correo electrónico</label>
+                    <div class="input-wrap">
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="2.5" y="4.5" width="19" height="15" rx="2.5"></rect>
+                            <path d="m3 6 9 6 9-6"></path>
+                        </svg>
+                        <input type="email" placeholder="De la persona que realizó el pago" id="email" name="email" autocomplete="email" required>
+                    </div>
+                </div>
 
-                <button type="submit" id="consultarBtn" class="btn btn-primary w-100">
-                    <span class="d-inline-block me-2"><i class="bi bi-search"></i></span>Consultar
-                    <span class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
-                </button>
+                <div class="submit-row">
+                    {# Altcha widget (descomenta cuando esté activo) #}
+                    {# <altcha-widget challengeurl="https://eu.altcha.org/api/v1/challenge?apiKey={{ altcha.apikey }}" strings='{{ altcha.strings | json_encode }}'></altcha-widget> #}
+
+                    <button type="submit" id="consultarBtn" class="btn-primary">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="11" cy="11" r="7"></circle>
+                            <path d="m20 20-3.2-3.2"></path>
+                        </svg>
+                        <span class="btn-label">Consultar recibos</span>
+                        <span class="spinner" aria-hidden="true"></span>
+                    </button>
+                    <p class="hint">Usá los mismos datos que registraste en el formulario de pago.</p>
+                </div>
             </form>
-        </div>
-    </div>
+        </section>
+
+        {# Resultados (solo después de POST) #}
+        {% if app.request.method == "POST" %}
+            <section class="results">
+                {% if transfer or box %}
+                    {% if transfer %}
+                        <article class="result-card result-card--transfer">
+                            <div class="result-head">
+                                <div>
+                                    <span class="pill">Transferencias</span>
+                                    <h3>{{ transfer[0].name ?: 'Recibos por transferencia' }}</h3>
+                                </div>
+                                <span class="count">{{ transfer|length }}</span>
+                            </div>
+                            <ul class="receipt-list">
+                                {% for item in transfer %}
+                                    <li class="receipt-row">
+                                        <div class="receipt-main">
+                                            <div class="receipt-title">{{ item.student }}</div>
+                                            <div class="receipt-meta">
+                                                {{ item.item }}{% if item.desc %} · {{ item.desc }}{% endif %}
+                                            </div>
+                                        </div>
+                                        <a class="download-btn" href="/drive/file/{{ item.receiptFile }}">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                <path d="M12 3v12"></path>
+                                                <path d="m7 10 5 5 5-5"></path>
+                                                <path d="M5 21h14"></path>
+                                            </svg>
+                                            Descargar PDF
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </article>
+                    {% endif %}
+
+                    {% if box %}
+                        <article class="result-card result-card--box">
+                            <div class="result-head">
+                                <div>
+                                    <span class="pill">Sobres</span>
+                                    <h3>{{ box[0].name ?: 'Recibos por sobre' }}</h3>
+                                </div>
+                                <span class="count">{{ box|length }}</span>
+                            </div>
+                            <ul class="receipt-list">
+                                {% for item in box %}
+                                    <li class="receipt-row">
+                                        <div class="receipt-main">
+                                            <div class="receipt-title">{{ item.student }}</div>
+                                            <div class="receipt-meta">{{ item.month }}</div>
+                                        </div>
+                                        <a class="download-btn" href="/drive/file/{{ item.receiptFile }}">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                <path d="M12 3v12"></path>
+                                                <path d="m7 10 5 5 5-5"></path>
+                                                <path d="M5 21h14"></path>
+                                            </svg>
+                                            Descargar PDF
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </article>
+                    {% endif %}
+                {% else %}
+                    <div class="empty-state">
+                        <span class="emoji" aria-hidden="true">🔎</span>
+                        <h3>No encontramos recibos</h3>
+                        <p>Revisá que el documento y el correo coincidan con los datos del pago.</p>
+                    </div>
+                {% endif %}
+            </section>
+        {% endif %}
+
+    </main>
+
+    <footer class="footer">
+        Hecho con <span class="heart">♥</span> por la <strong>{{ portal.title }}</strong>
+    </footer>
 </div>
 
-{# Spinner overlay (opcional, para un feedback global) #}
-<div id="loadingOverlay" class="loading-overlay">
-    <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Cargando...</span>
-    </div>
+{# Overlay de carga #}
+<div id="loadingOverlay" class="loading-overlay" aria-hidden="true">
+    <span class="spinner-lg"></span>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     // --------- Indicador de carga ----------
     const form = document.getElementById('consultaForm');
     const btn = document.getElementById('consultarBtn');
-    const spinner = btn.querySelector('.spinner-border');
     const overlay = document.getElementById('loadingOverlay');
 
     form.addEventListener('submit', function (e) {
-        // Deshabilitamos el botón y mostramos el spinner interno
         e.preventDefault();
         btn.disabled = true;
-        spinner.classList.remove('d-none');
-
-        // Opcional: mostramos un overlay global mientras se procesa la petición
+        btn.classList.add('is-loading');
         overlay.classList.add('show');
-        // Espera 300 ms (ajusta según tu necesidad) y luego envía el formulario
-        setTimeout(() => form.submit(), 500);
-    });
+        overlay.setAttribute('aria-hidden', 'false');
 
-    // Si quieres que el overlay se oculte cuando la respuesta llegue,
-    // debes añadir un manejo de eventos en tu controlador que redirija
-    // o actualice la página después de procesar la consulta.
+        // Pequeña espera para que el usuario vea el feedback y luego enviamos.
+        setTimeout(() => form.submit(), 450);
+    });
 </script>
 </body>
 </html>

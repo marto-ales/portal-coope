@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin · Acceso</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --orange: #ff6b35; --orange-strong: #ee4d1f; --pink: #ff5f8f;
+            --teal: #2ec4b6; --grape: #7b61ff; --yellow: #ffd23f;
+            --ink: #2b2440; --muted: #6f6a86; --line: #ece9f5;
+            --font: 'Poppins', system-ui, -apple-system, sans-serif;
+            --font-display: 'Quicksand', 'Poppins', system-ui, sans-serif;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; min-height: 100vh; display: grid; place-items: center;
+            font-family: var(--font); color: var(--ink); padding: 1.5rem;
+            background:
+                radial-gradient(800px 460px at 0% -10%, #d9f6ff 0%, rgba(217,246,255,0) 60%),
+                radial-gradient(700px 460px at 100% 0%, #ffe4d1 0%, rgba(255,228,209,0) 58%),
+                radial-gradient(700px 460px at 50% 115%, #e9e4ff 0%, rgba(233,228,255,0) 60%),
+                linear-gradient(180deg, #fbfdff 0%, #fffaf3 100%);
+        }
+        .login-card {
+            width: min(430px, 100%); background: rgba(255,255,255,.92);
+            border: 1px solid rgba(255,255,255,.9); border-radius: 30px;
+            box-shadow: 0 34px 70px -34px rgba(84,44,120,.45);
+            padding: 2.3rem; animation: rise .5s ease both;
+        }
+        .badge-admin {
+            display: inline-flex; align-items: center; gap: .4rem;
+            font-family: var(--font-display); font-size: .76rem; font-weight: 500;
+            letter-spacing: .08em; text-transform: uppercase; color: #fff;
+            background: linear-gradient(120deg, #ff6b35, #ff5f8f);
+            padding: .42rem .95rem; border-radius: 999px; margin-bottom: 1.1rem;
+            box-shadow: 0 10px 20px -12px rgba(255,95,143,.9);
+        }
+        .badge-admin::before { content: "✦"; color: var(--yellow); }
+        h1 {
+            margin: 0 0 .3rem; font-family: var(--font-display); font-weight: 600;
+            font-size: 1.8rem; letter-spacing: -.01em;
+            background: linear-gradient(115deg, var(--orange-strong), var(--pink) 55%, var(--grape));
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
+        .sub { margin: 0 0 1.6rem; color: var(--muted); font-size: .93rem; }
+        label { display: block; font-family: var(--font-display); font-size: .85rem; font-weight: 500; margin-bottom: .45rem; }
+        input[type=password], input[type=text] {
+            width: 100%; font-family: var(--font); font-size: 1rem; font-weight: 600; color: var(--ink);
+            background: #fffaf3; border: 2px solid var(--line); border-radius: 16px;
+            padding: .9rem 1rem; transition: border-color .2s, box-shadow .2s, background .2s;
+        }
+        input:focus { outline: none; border-color: var(--teal); background: #fff; box-shadow: 0 0 0 4px rgba(46,196,182,.16); }
+        .btn {
+            width: 100%; margin-top: 1.1rem; font-family: var(--font-display); font-size: 1.02rem;
+            font-weight: 500; color: #fff; border: none; border-radius: 16px;
+            padding: .95rem 1.2rem; cursor: pointer;
+            background: linear-gradient(120deg, #ff6b35 0%, #ff5f8f 55%, #7b61ff 120%);
+            box-shadow: 0 16px 30px -14px rgba(255,95,143,.75);
+            transition: transform .2s cubic-bezier(.2,.8,.2,1.2), box-shadow .25s ease;
+        }
+        .btn:hover { transform: translateY(-2px) scale(1.01); box-shadow: 0 22px 38px -16px rgba(255,95,143,.8); }
+        .alert-error {
+            background: #fff0f3; border: 1.5px solid #ffc9d6; color: #b3224a;
+            border-radius: 14px; padding: .8rem 1rem; font-size: .9rem; font-weight: 600; margin-bottom: 1.1rem;
+        }
+        .back { display: block; text-align: center; margin-top: 1.4rem; font-size: .88rem; font-weight: 700; color: var(--muted); text-decoration: none; }
+        .back:hover { color: var(--orange-strong); }
+        @keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <span class="badge-admin">Acceso restringido</span>
+        <h1>Configuración del portal</h1>
+        <p class="sub">Ingresá la contraseña de administración para continuar.</p>
+
+        {% if error %}
+            <div class="alert-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST">
+            <label for="password">Contraseña de configuración</label>
+            <input type="password" id="password" name="password" placeholder="••••••••" required autofocus>
+            <button type="submit" class="btn">Ingresar</button>
+        </form>
+
+        <a href="{{ path('receipt') }}" class="back">← Volver al portal</a>
+    </div>
+</body>
+</html>

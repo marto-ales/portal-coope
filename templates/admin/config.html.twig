@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Admin - Config</title>
+    <style>
+        body { background: #f0f2f5; }
+        .sidebar { min-height: 100vh; background: #2c3e50; color: #fff; }
+        .sidebar .nav-link { color: rgba(255,255,255,.8); padding: 10px 20px; border-radius: 4px; margin: 2px 0; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: #1abc9c; color: #fff; }
+        .sidebar .nav-link .badge { font-size: .7em; }
+        .content { padding: 30px; }
+        .config-card { border: none; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+        .config-card .card-header { background: #2c3e50; color: #fff; font-weight: 600; }
+        .section-label { font-size: .85em; color: #6c757d; text-transform: uppercase; letter-spacing: .5px; margin-top: 20px; }
+        .flash-success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 10px 15px; border-radius: 4px; margin-bottom: 15px; }
+        .flash-error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 10px 15px; border-radius: 4px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <div class="d-flex">
+        <div class="sidebar d-none d-md-block p-3" style="width: 250px;">
+            <h5 class="mb-4">⚙️ Admin</h5>
+            <nav class="nav flex-column">
+                {% for sectionName in sections|keys %}
+                    <a class="nav-link {{ currentSection == sectionName ? 'active' : '' }}"
+                       href="{{ path('admin_config', {section: sectionName}) }}">
+                        {{ sectionLabels[sectionName] ?: sectionName }}
+                    </a>
+                {% endfor %}
+            </nav>
+            <hr style="border-color: rgba(255,255,255,.2);">
+            <a class="nav-link" href="{{ path('admin_logout') }}">🚪 Cerrar sesión</a>
+        </div>
+
+        <div class="flex-grow-1 content">
+            <div class="d-flex justify-content-between align-items-center mb-4 d-md-none">
+                <h5>⚙️ Admin</h5>
+                <a href="{{ path('admin_logout') }}" class="btn btn-sm btn-outline-danger">🚪</a>
+            </div>
+
+            {% for message in app.flashes('success')|default([]) %}
+                <div class="flash-success">{{ message }}</div>
+            {% endfor %}
+            {% for message in app.flashes('error')|default([]) %}
+                <div class="flash-error">{{ message }}</div>
+            {% endfor %}
+
+            {% if currentSection %}
+                {% set sectionLabel = sectionLabels[currentSection] ?: currentSection %}
+                <div class="card config-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>{{ sectionLabel }}</span>
+                        <span class="badge bg-light text-dark">{{ config|length }} variables</span>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ path('admin_config_save') }}">
+                            <input type="hidden" name="section" value="{{ currentSection }}">
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">APP_ENV</label>
+                                <select name="config[APP_ENV]" class="form-select">
+                                    {% for env in ['dev', 'test', 'prod'] %}
+                                        <option value="{{ env }}" {{ config.APP_ENV == env ? 'selected' : '' }}>{{ env }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Ambiente de la aplicación</div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">APP_SECRET</label>
+                                <input type="text" name="config[APP_SECRET]" value="{{ config.APP_SECRET ?: '' }}" class="form-control">
+                                <div class="form-text">Secret para CSRF, sesiones, etc.</div>
+                            </div>
+
+                            {% if currentSection == 'doctrine/doctrine-bundle' %}
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">DATABASE_URL</label>
+                                    <input type="text" name="config[DATABASE_URL]" value="{{ config.DATABASE_URL ?: '' }}" class="form-control">
+                                    <div class="form-text">URL de conexión a PostgreSQL/MySQL</div>
+                                </div>
+                            {% endif %}
+
+                            {% if currentSection == 'symfony/messenger' %}
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">MESSENGER_TRANSPORT_DSN</label>
+                                    <input type="text" name="config[MESSENGER_TRANSPORT_DSN]" value="{{ config.MESSENGER_TRANSPORT_DSN ?: '' }}" class="form-control">
+                                </div>
+                            {% endif %}
+
+                            {% if currentSection == 'symfony/mailer' %}
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">MAILER_DSN</label>
+                                    <input type="text" name="config[MAILER_DSN]" value="{{ config.MAILER_DSN ?: '' }}" class="form-control">
+                                    <div class="form-text">Ej: gmail://USERNAME:PASSWORD@default</div>
+                                </div>
+                            {% endif %}
+
+                            {% if currentSection == 'google/apiclient' %}
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">GOOGLE_API_KEY</label>
+                                    <input type="text" name="config[GOOGLE_API_KEY]" value="{{ config.GOOGLE_API_KEY ?: '' }}" class="form-control">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">GOOGLE_CLIENT_ID</label>
+                                    <input type="text" name="config[GOOGLE_CLIENT_ID]" value="{{ config.GOOGLE_CLIENT_ID ?: '' }}" class="form-control">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">GOOGLE_CLIENT_SECRET</label>
+                                    <input type="password" name="config[GOOGLE_CLIENT_SECRET]" value="{{ config.GOOGLE_CLIENT_SECRET ?: '' }}" class="form-control">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">GOOGLE_AUTH_CONFIG</label>
+                                    <input type="text" name="config[GOOGLE_AUTH_CONFIG]" value="{{ config.GOOGLE_AUTH_CONFIG ?: '' }}" class="form-control">
+                                    <div class="form-text">Ruta al archivo credentials.json</div>
+                                </div>
+                            {% endif %}
+
+                            {% if currentSection == 'general' %}
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">GOOGLE_TRF_SHEET_ID</label>
+                                    <input type="text" name="config[GOOGLE_TRF_SHEET_ID]" value="{{ config.GOOGLE_TRF_SHEET_ID ?: '' }}" class="form-control">
+                                    <div class="form-text">Hoja de Google para recibos por transferencia</div>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">GOOGLE_TRF_SHEET_RANGE</label>
+                                    <input type="text" name="config[GOOGLE_TRF_SHEET_RANGE]" value="{{ config.GOOGLE_TRF_SHEET_RANGE ?: '' }}" class="form-control">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">GOOGLE_BOX_SHEET_ID</label>
+                                    <input type="text" name="config[GOOGLE_BOX_SHEET_ID]" value="{{ config.GOOGLE_BOX_SHEET_ID ?: '' }}" class="form-control">
+                                    <div class="form-text">Hoja de Google para recibos por sobre</div>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">GOOGLE_BOX_SHEET_RANGE</label>
+                                    <input type="text" name="config[GOOGLE_BOX_SHEET_RANGE]" value="{{ config.GOOGLE_BOX_SHEET_RANGE ?: '' }}" class="form-control">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">GOOGLE_REC_FOLDER_ID</label>
+                                    <input type="text" name="config[GOOGLE_REC_FOLDER_ID]" value="{{ config.GOOGLE_REC_FOLDER_ID ?: '' }}" class="form-control">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">RECIBOS_PREFIJO</label>
+                                    <input type="text" name="config[RECIBOS_PREFIJO]" value="{{ config.RECIBOS_PREFIJO ?: '' }}" class="form-control">
+                                </div>
+                            {% endif %}
+
+                            {% if currentSection == 'general' %}
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">PORTAL_TITLE</label>
+                                    <input type="text" name="config[PORTAL_TITLE]" value="{{ config.PORTAL_TITLE ?: '' }}" class="form-control">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">PORTAL_SUBTITLE</label>
+                                    <input type="text" name="config[PORTAL_SUBTITLE]" value="{{ config.PORTAL_SUBTITLE ?: '' }}" class="form-control">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">PORTAL_DESCRIPTION</label>
+                                    <textarea name="config[PORTAL_DESCRIPTION]" class="form-control" rows="3">{{ config.PORTAL_DESCRIPTION ?: '' }}</textarea>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">PORTAL_LOGO</label>
+                                    <input type="text" name="config[PORTAL_LOGO]" value="{{ config.PORTAL_LOGO ?: '' }}" class="form-control">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">PORTAL_FORM_URL</label>
+                                    <input type="text" name="config[PORTAL_FORM_URL]" value="{{ config.PORTAL_FORM_URL ?: '' }}" class="form-control">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">PORTAL_BANK_INFO</label>
+                                    <textarea name="config[PORTAL_BANK_INFO]" class="form-control" rows="4">{{ config.PORTAL_BANK_INFO ?: '' }}</textarea>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">PORTAL_EMAIL</label>
+                                    <input type="email" name="config[PORTAL_EMAIL]" value="{{ config.PORTAL_EMAIL ?: '' }}" class="form-control">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">ALTCHA_APIKEY</label>
+                                    <input type="text" name="config[ALTCHA_APIKEY]" value="{{ config.ALTCHA_APIKEY ?: '' }}" class="form-control">
+                                    <div class="form-text">Clave de la API de Altcha (anti-bot)</div>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">ADMIN_CONFIG_PASSWORD</label>
+                                    <input type="password" name="config[ADMIN_CONFIG_PASSWORD]" value="" class="form-control" placeholder="{{ config.ADMIN_CONFIG_PASSWORD ? '•••••••• (dejar vacío para mantener la actual)' : 'Sin contraseña configurada' }}" autocomplete="new-password">
+                                    <div class="form-text">Dejá este campo vacío para conservar la contraseña actual. Si escribís una nueva, se guardará cifrada.</div>
+                                </div>
+                            {% endif %}
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-success">💾 Guardar</button>
+                                <a href="{{ path('admin_config') }}" class="btn btn-secondary">Cancelar</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-info">Selecciona una sección del menú lateral para editar.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
