@@ -27,6 +27,7 @@ class GoogleDriveService
 
     public function getSpreadsheetData($spreadsheetId, $range)
     {
+        $this->setAccessToken();
         $service = new \Google\Service\Sheets($this->client);
         $response = $service->spreadsheets_values->get($spreadsheetId, $range);
         return $response->getValues();

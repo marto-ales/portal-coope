@@ -25,3 +25,12 @@
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+
+###> secretos locales (no versionar) ###
+/config/credentials_cli.json
+/config/credentials_dev.json
+/config/portal-coope-*.json
+/config/token_cli.json
+/altcha_api_key_*.json
+/credentials-stg.json
+###< secretos locales (no versionar) ###

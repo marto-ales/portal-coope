@@ -14,8 +14,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
 
-    {# Altcha – Protección anti‑bot (solo se carga si el widget está activo) #}
-    <script async defer src="https://cdn.jsdelivr.net/npm/altcha/dist/altcha.min.js" type="module"></script>
+    {# Altcha – CAPTCHA self-hosted (desafío generado por /captcha/challenge) #}
+    <script async defer src="https://cdn.jsdelivr.net/npm/altcha@3.6.0/dist/altcha.min.js" type="module"></script>
 </head>
 
 <body>
@@ -107,8 +107,14 @@
                 </div>
 
                 <div class="submit-row">
-                    {# Altcha widget (descomenta cuando esté activo) #}
-                    {# <altcha-widget challengeurl="https://eu.altcha.org/api/v1/challenge?apiKey={{ altcha.apikey }}" strings='{{ altcha.strings | json_encode }}'></altcha-widget> #}
+                    {% if captcha_error %}
+                        <div class="alert-error" role="alert">{{ captcha_error }}</div>
+                    {% endif %}
+
+                    <altcha-widget
+                        challenge="{{ path('altcha_challenge') }}"
+                        strings='{{ altcha.strings | json_encode }}'>
+                    </altcha-widget>
 
                     <button type="submit" id="consultarBtn" class="btn-primary">
                         <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

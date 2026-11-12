@@ -379,6 +379,17 @@ body {
     display: none;
 }
 
+.alert-error {
+    background: #fff0f3;
+    border: 1.5px solid #ffc9d6;
+    color: #b3224a;
+    border-radius: 14px;
+    padding: .8rem 1rem;
+    font-size: .9rem;
+    font-weight: 600;
+    text-align: center;
+}
+
 .hint {
     margin: .2rem 0 0;
     text-align: center;

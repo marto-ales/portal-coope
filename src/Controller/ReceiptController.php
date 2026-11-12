@@ -2,6 +2,7 @@
 // src/Controller/ReceiptController.php
 namespace App\Controller;
 
+use App\Service\AltchaService;
 use App\Service\GoogleDriveService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -11,15 +12,17 @@ use Symfony\Component\Routing\Annotation\Route;
 class ReceiptController extends AbstractController
 {
     private $googleDriveService;
+    private $altchaService;
     private $receiptsFolderId;
     private $trfSpreadsheetId;
     private $trfSpreadsheetRange;
     private $boxSpreadsheetId;
     private $boxSpreadsheetRange;
 
-    public function __construct(GoogleDriveService $googleDriveService)
+    public function __construct(GoogleDriveService $googleDriveService, AltchaService $altchaService)
     {
         $this->googleDriveService = $googleDriveService;
+        $this->altchaService = $altchaService;
         $this->receiptsFolderId = $_ENV['GOOGLE_REC_FOLDER_ID'];
         $this->trfSpreadsheetId = $_ENV['GOOGLE_TRF_SHEET_ID'];
         $this->trfSpreadsheetRange = $_ENV['GOOGLE_TRF_SHEET_RANGE'];
@@ -34,17 +37,25 @@ class ReceiptController extends AbstractController
     {
         $transferReceipts = [];
         $boxReceipts = [];
+        $captchaError = null;
 
         if ($request->isMethod('POST')) {
-            $idNumber = $request->request->get('id_number');
-            $email = $request->request->get('email');
-            $transferReceipts = $this->getTransferReceipts($idNumber, $email);
-            $boxReceipts = $this->getBoxReceipts($idNumber, $email);
+            $captchaPayload = (string) $request->request->get('altcha', '');
+
+            if (!$this->altchaService->verify($captchaPayload)) {
+                $captchaError = 'No pudimos verificar que no sos un robot. Volvé a intentarlo.';
+            } else {
+                $idNumber = $request->request->get('id_number');
+                $email = $request->request->get('email');
+                $transferReceipts = $this->getTransferReceipts($idNumber, $email);
+                $boxReceipts = $this->getBoxReceipts($idNumber, $email);
+            }
         }
 
         return $this->render('receipt/index.html.twig', [
             'transfer' => $transferReceipts,
             'box' => $boxReceipts,
+            'captcha_error' => $captchaError,
         ]);
     }
 
