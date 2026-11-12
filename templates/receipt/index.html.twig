@@ -14,8 +14,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
 
-    {# Altcha – CAPTCHA self-hosted (desafío generado por /captcha/challenge) #}
-    <script async defer src="https://cdn.jsdelivr.net/npm/altcha@3.6.0/dist/main/altcha.min.js" type="module"></script>
+    {# ALTCHA self-hosted: widget + traducciones al español (es-419) #}
+    <script src="https://cdn.jsdelivr.net/npm/altcha@3.6.0/dist/main/altcha.min.js" type="module"></script>
+    <script src="https://cdn.jsdelivr.net/npm/altcha@3.6.0/dist/i18n/es-419.js" type="module"></script>
 </head>
 
 <body>
@@ -113,7 +114,7 @@
 
                     <altcha-widget
                         challenge="{{ path('altcha_challenge') }}"
-                        strings='{{ altcha.strings | json_encode }}'>
+                        language="es-419">
                     </altcha-widget>
 
                     <button type="submit" id="consultarBtn" class="btn-primary">
