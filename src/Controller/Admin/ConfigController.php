@@ -9,6 +9,18 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
+/*
+ * ADMIN DESHABILITADO (2026-11-13)
+ *
+ * Las rutas del panel de administración están comentadas a propósito: el
+ * guardado de configuración no es seguro todavía (escribe sobre .env.local,
+ * que en producción no se lee porque Symfony usa .env.local.php).
+ *
+ * El desarrollo se conserva completo. Para volver a habilitarlo, descomentar
+ * los atributos #[Route(...)] de index(), save(), login() y logout().
+ *
+ * Mientras esté deshabilitado, /admin/config y /admin/login responden 404.
+ */
 #[Route('/admin')]
 class ConfigController extends AbstractController
 {
@@ -17,7 +29,7 @@ class ConfigController extends AbstractController
     ) {
     }
 
-    #[Route('/config', name: 'admin_config', methods: ['GET'], stateless: false)]
+    // #[Route('/config', name: 'admin_config', methods: ['GET'], stateless: false)]
     public function index(Request $request, SessionInterface $session): Response
     {
         // Check if already authenticated
@@ -71,7 +83,7 @@ class ConfigController extends AbstractController
         ]);
     }
 
-    #[Route('/config/save', name: 'admin_config_save', methods: ['POST'], stateless: false)]
+    // #[Route('/config/save', name: 'admin_config_save', methods: ['POST'], stateless: false)]
     public function save(Request $request, SessionInterface $session): Response
     {
         if (!$session->get('env_config_authenticated')) {
@@ -94,7 +106,7 @@ class ConfigController extends AbstractController
         return $this->redirectToRoute('admin_config', ['section' => $section]);
     }
 
-    #[Route('/login', name: 'admin_login', methods: ['GET', 'POST'], stateless: false)]
+    // #[Route('/login', name: 'admin_login', methods: ['GET', 'POST'], stateless: false)]
     public function login(Request $request, SessionInterface $session): Response
     {
         if ($session->get('env_config_authenticated')) {
@@ -123,7 +135,7 @@ class ConfigController extends AbstractController
         return $this->render('admin/login.html.twig', ['error' => $error]);
     }
 
-    #[Route('/logout', name: 'admin_logout', methods: ['GET'], stateless: false)]
+    // #[Route('/logout', name: 'admin_logout', methods: ['GET'], stateless: false)]
     public function logout(SessionInterface $session): Response
     {
         $session->remove('env_config_authenticated');
