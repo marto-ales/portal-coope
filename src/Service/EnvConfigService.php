@@ -97,12 +97,13 @@ class EnvConfigService
         $isGeneral = false;
 
         if ($sectionName === 'general') {
-            // For "general" section, read unbracketed keys at the top
-            $foundFirstBracket = false;
+            // La pantalla "Portal & General" muestra todas las variables visibles.
+            // Se recorre el archivo completo y gana la última definición, igual
+            // que hace Dotenv al cargar .env.local.
             foreach (explode("\n", $content) as $line) {
                 $trimmed = trim($line);
-                if (preg_match('/^###>\s*(.+?)\s*<###$/', $trimmed)) {
-                    break;
+                if ($trimmed === '' || str_starts_with($trimmed, '#') || str_starts_with($trimmed, 'export ')) {
+                    continue;
                 }
                 if (preg_match('/^([A-Z_][A-Z0-9_]*)=(.*)$/', $trimmed, $m)) {
                     $value = $m[2];
@@ -184,30 +185,37 @@ class EnvConfigService
         $lines = explode("\n", $content);
 
         if ($sectionName === 'general') {
-            // Save unbracketed keys at the top (before first bracket)
-            $newLines = [];
             $block = ["###>general<###"];
             foreach ($config as $key => $value) {
                 $block[] = $this->formatEnvLine($key, $value);
             }
             $block[] = "###<general<###";
 
+            // Si ya existe un bloque general, reemplazarlo en su lugar.
+            // Si no, agregarlo al final (así sus valores pisan a los anteriores,
+            // igual que hace Dotenv al leer el archivo).
+            $start = null;
+            $end = null;
             foreach ($lines as $i => $line) {
                 $trimmed = trim($line);
-                if (preg_match('/^###>\s*(.+?)\s*<###$/', $trimmed)) {
-                    // Insert general block before first bracket
-                    $newLines = array_merge($newLines, $block, ["\n"]);
-                    for ($j = $i; $j < count($lines); $j++) {
-                        $newLines[] = $lines[$j];
-                    }
-                    file_put_contents($envPath, implode("\n", $newLines));
-                    clearstatcache(true, $envPath);
-                    return;
+                if ($trimmed === '###>general<###') {
+                    $start = $i;
+                } elseif ($trimmed === '###<general<###' && $start !== null) {
+                    $end = $i;
+                    break;
                 }
             }
 
-            // No brackets found: append the block preserving the existing content
-            $newLines = array_merge($lines, [""], $block);
+            if ($start !== null && $end !== null) {
+                $newLines = array_merge(
+                    array_slice($lines, 0, $start),
+                    $block,
+                    array_slice($lines, $end + 1)
+                );
+            } else {
+                $newLines = array_merge($lines, [""], $block);
+            }
+
             file_put_contents($envPath, implode("\n", $newLines));
             clearstatcache(true, $envPath);
             return;
@@ -264,10 +272,20 @@ class EnvConfigService
 
     private function formatEnvLine(string $key, string $value): string
     {
-        if ($value === '' || preg_match('/[\s"\x00-\x1f#\'\\\\]/', $value)) {
-            $escaped = str_replace(['\\', "'"], ['\\\\', "\\'"], $value);
-            return "{$key}='{$escaped}'";
+        // Sin comillas solo cuando no hay caracteres que Dotenv tenga que interpretar.
+        if ($value !== '' && !preg_match('/[\s"\'#\\\\$]/', $value)) {
+            return "{$key}={$value}";
         }
-        return "{$key}={$value}";
+
+        // Comillas simples: seguras para valores con espacios, $ y #, incluso multilínea.
+        // Dotenv no soporta escapar comillas simples, así que se usan solo si no hay.
+        if (!str_contains($value, "'")) {
+            return "{$key}='{$value}'";
+        }
+
+        // Comillas dobles: se escapan \\, " y $ (Dotenv expande variables y comandos).
+        $escaped = str_replace(['\\', '"', '$'], ['\\\\', '\\"', '\\$'], $value);
+
+        return "{$key}=\"{$escaped}\"";
     }
 }

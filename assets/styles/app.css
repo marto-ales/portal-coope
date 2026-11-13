@@ -661,6 +661,83 @@ body {
     white-space: pre-line;
 }
 
+.bank-data {
+    display: grid;
+    gap: .5rem;
+    margin-top: .6rem;
+}
+
+.bank-row {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .5rem .65rem;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    font-size: .85rem;
+}
+
+.bank-row-label {
+    flex: 0 0 auto;
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--grape);
+}
+
+.bank-row-value {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-weight: 600;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+    user-select: all;
+}
+
+.copy-btn {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .3rem .55rem;
+    border: 1px solid #d9d2ee;
+    border-radius: 999px;
+    background: rgba(123, 97, 255, .08);
+    color: var(--grape);
+    font: inherit;
+    font-size: .72rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .2s ease, border-color .2s ease, color .2s ease, transform .15s ease;
+}
+
+.copy-btn svg {
+    width: 13px;
+    height: 13px;
+}
+
+.copy-btn:hover {
+    background: rgba(123, 97, 255, .16);
+    border-color: var(--grape);
+}
+
+.copy-btn:active {
+    transform: scale(.96);
+}
+
+.copy-btn:focus-visible {
+    outline: 2px solid var(--grape);
+    outline-offset: 2px;
+}
+
+.copy-btn.is-copied {
+    background: rgba(46, 196, 182, .16);
+    border-color: var(--teal);
+    color: #177e75;
+}
+
 .contact-link {
     display: inline-flex;
     align-items: center;

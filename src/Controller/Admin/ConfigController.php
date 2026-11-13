@@ -86,7 +86,7 @@ class ConfigController extends AbstractController
         }
 
         // Collect all form fields that belong to this section
-        $config = $request->request->get('config', []);
+        $config = $request->request->all('config');
 
         $this->envConfigService->saveSection($section, $config);
         $this->addFlash('success', "Configuración de '{$section}' guardada correctamente.");

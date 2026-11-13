@@ -47,6 +47,39 @@
                     Datos para transferir
                 </h3>
                 <div class="bank-box">{{ portal.datos_banco }}</div>
+
+                {% if portal.cbu or portal.alias %}
+                    <div class="bank-data">
+                        {% if portal.cbu %}
+                            <div class="bank-row">
+                                <span class="bank-row-label">CBU</span>
+                                <span class="bank-row-value">{{ portal.cbu }}</span>
+                                <button type="button" class="copy-btn" data-copy="{{ portal.cbu }}" aria-label="Copiar CBU">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <rect x="9" y="9" width="12" height="12" rx="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                    <span class="copy-label" aria-live="polite">Copiar</span>
+                                </button>
+                            </div>
+                        {% endif %}
+
+                        {% if portal.alias %}
+                            <div class="bank-row">
+                                <span class="bank-row-label">Alias</span>
+                                <span class="bank-row-value">{{ portal.alias }}</span>
+                                <button type="button" class="copy-btn" data-copy="{{ portal.alias }}" aria-label="Copiar alias">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <rect x="9" y="9" width="12" height="12" rx="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                    <span class="copy-label" aria-live="polite">Copiar</span>
+                                </button>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
                 <a class="contact-link" href="mailto:{{ portal.email }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <rect x="2.5" y="4.5" width="19" height="15" rx="2.5"></rect>
@@ -232,6 +265,54 @@
 
         // Pequeña espera para que el usuario vea el feedback y luego enviamos.
         setTimeout(() => form.submit(), 450);
+    });
+
+    // --------- Copiar CBU / Alias al portapapeles ----------
+    document.querySelectorAll('.copy-btn').forEach((copyBtn) => {
+        copyBtn.addEventListener('click', async () => {
+            const value = copyBtn.dataset.copy || '';
+            const label = copyBtn.querySelector('.copy-label');
+            const original = label ? label.textContent : '';
+            let copied = false;
+
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(value);
+                    copied = true;
+                }
+            } catch (err) {
+                copied = false;
+            }
+
+            // Respaldo para navegadores o contextos sin permiso de clipboard.
+            if (!copied) {
+                const helper = document.createElement('textarea');
+                helper.value = value;
+                helper.setAttribute('readonly', '');
+                helper.style.position = 'fixed';
+                helper.style.top = '-1000px';
+                helper.style.opacity = '0';
+                document.body.appendChild(helper);
+                helper.select();
+                helper.setSelectionRange(0, helper.value.length);
+                try {
+                    copied = document.execCommand('copy');
+                } catch (err) {
+                    copied = false;
+                }
+                document.body.removeChild(helper);
+            }
+
+            if (label) {
+                label.textContent = copied ? '¡Copiado!' : 'No se pudo copiar';
+            }
+            copyBtn.classList.toggle('is-copied', copied);
+
+            window.setTimeout(() => {
+                if (label) label.textContent = original;
+                copyBtn.classList.remove('is-copied');
+            }, 1800);
+        });
     });
 
     // --------- Desplazamiento automático a los resultados ----------

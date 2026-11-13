@@ -171,15 +171,21 @@
                                 <div class="mb-4">
                                     <label class="form-label fw-bold">PORTAL_BANK_INFO</label>
                                     <textarea name="config[PORTAL_BANK_INFO]" class="form-control" rows="4">{{ config.PORTAL_BANK_INFO ?: '' }}</textarea>
+                                    <div class="form-text">Texto libre con los datos bancarios (banco, titular, cuenta, etc.)</div>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">PORTAL_CBU</label>
+                                    <input type="text" name="config[PORTAL_CBU]" value="{{ config.PORTAL_CBU ?: '' }}" class="form-control" placeholder="Ej: 0170099220000067801234" inputmode="numeric">
+                                    <div class="form-text">CBU que se muestra en la tarjeta con botón para copiar</div>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">PORTAL_ALIAS</label>
+                                    <input type="text" name="config[PORTAL_ALIAS]" value="{{ config.PORTAL_ALIAS ?: '' }}" class="form-control" placeholder="Ej: coope.rosales.pagos">
+                                    <div class="form-text">Alias que se muestra en la tarjeta con botón para copiar</div>
                                 </div>
                                 <div class="mb-4">
                                     <label class="form-label fw-bold">PORTAL_EMAIL</label>
                                     <input type="email" name="config[PORTAL_EMAIL]" value="{{ config.PORTAL_EMAIL ?: '' }}" class="form-control">
-                                </div>
-                                <div class="mb-4">
-                                    <label class="form-label fw-bold">ALTCHA_APIKEY</label>
-                                    <input type="text" name="config[ALTCHA_APIKEY]" value="{{ config.ALTCHA_APIKEY ?: '' }}" class="form-control">
-                                    <div class="form-text">Clave de la API de Altcha (anti-bot)</div>
                                 </div>
                                 <div class="mb-4">
                                     <label class="form-label fw-bold">ADMIN_CONFIG_PASSWORD</label>
