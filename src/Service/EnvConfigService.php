@@ -91,36 +91,24 @@ class EnvConfigService
         }
 
         $content = file_get_contents($envPath);
-        $config = [];
-        $currentSection = null;
-        $inSection = false;
-        $isGeneral = false;
+        $lines = explode("\n", $content);
 
         if ($sectionName === 'general') {
             // La pantalla "Portal & General" muestra todas las variables visibles.
-            // Se recorre el archivo completo y gana la última definición, igual
-            // que hace Dotenv al cargar .env.local.
-            foreach (explode("\n", $content) as $line) {
-                $trimmed = trim($line);
-                if ($trimmed === '' || str_starts_with($trimmed, '#') || str_starts_with($trimmed, 'export ')) {
-                    continue;
-                }
-                if (preg_match('/^([A-Z_][A-Z0-9_]*)=(.*)$/', $trimmed, $m)) {
-                    $value = $m[2];
-                    if ((str_starts_with($value, "'") && str_ends_with($value, "'")) ||
-                        (str_starts_with($value, '"') && str_ends_with($value, '"'))) {
-                        $value = substr($value, 1, -1);
-                    }
-                    $config[$m[1]] = $value;
-                }
-            }
-            return $config;
+            // Gana la última definición, igual que hace Dotenv al cargar .env.local.
+            return $this->parseEnvLines($lines);
         }
 
-        foreach (explode("\n", $content) as $line) {
+        // Recolectar solo las líneas de la sección pedida. Se admiten los dos
+        // formatos de marcador: "###> nombre ###" y "###>nombre<###".
+        $sectionLines = [];
+        $currentSection = null;
+        $inSection = false;
+
+        foreach ($lines as $line) {
             $trimmed = trim($line);
 
-            if (preg_match('/^###>\s*(.+?)\s*<###$/', $trimmed, $m)) {
+            if (preg_match('/^###>\s*(.+?)\s*(?:<)?###$/', $trimmed, $m)) {
                 if ($currentSection === $sectionName) {
                     $inSection = true;
                 }
@@ -128,7 +116,7 @@ class EnvConfigService
                 continue;
             }
 
-            if (preg_match('/^###<\s*(.+?)\s*<###$/', $trimmed, $m)) {
+            if (preg_match('/^###<\s*(.+?)\s*(?:<)?###$/', $trimmed, $m)) {
                 if ($currentSection === $sectionName && $inSection) {
                     $inSection = false;
                 }
@@ -136,18 +124,50 @@ class EnvConfigService
             }
 
             if ($inSection) {
-                if ($trimmed === '' || str_starts_with($trimmed, '#') || str_starts_with($trimmed, 'export ')) {
-                    continue;
+                $sectionLines[] = $line;
+            }
+        }
+
+        return $this->parseEnvLines($sectionLines);
+    }
+
+    /**
+     * Convierte líneas de un archivo .env en un array clave => valor.
+     * Soporta valores entre comillas que ocupan varias líneas.
+     */
+    private function parseEnvLines(array $lines): array
+    {
+        $config = [];
+        $count = count($lines);
+
+        for ($i = 0; $i < $count; $i++) {
+            $trimmed = trim($lines[$i]);
+            if ($trimmed === '' || str_starts_with($trimmed, '#') || str_starts_with($trimmed, 'export ')) {
+                continue;
+            }
+            if (!preg_match('/^([A-Z_][A-Z0-9_]*)=(.*)$/', $trimmed, $m)) {
+                continue;
+            }
+
+            $key = $m[1];
+            $value = $m[2];
+            $quote = $value !== '' ? $value[0] : '';
+
+            if ($quote === "'" || $quote === '"') {
+                // El valor puede continuar en las líneas siguientes.
+                $raw = substr($value, 1);
+                while (!str_contains($raw, $quote) && $i + 1 < $count) {
+                    $raw .= "\n" . $lines[++$i];
                 }
-                if (preg_match('/^([A-Z_][A-Z0-9_]*)=(.*)$/', $trimmed, $m)) {
-                    $value = $m[2];
-                    if ((str_starts_with($value, "'") && str_ends_with($value, "'")) ||
-                        (str_starts_with($value, '"') && str_ends_with($value, '"'))) {
-                        $value = substr($value, 1, -1);
-                    }
-                    $config[$m[1]] = $value;
+                $end = strpos($raw, $quote);
+                $value = $end === false ? $raw : substr($raw, 0, $end);
+
+                if ($quote === '"') {
+                    $value = str_replace(['\\n', '\\r', '\\"', '\\\\'], ["\n", "\r", '"', '\\'], $value);
                 }
             }
+
+            $config[$key] = $value;
         }
 
         return $config;
